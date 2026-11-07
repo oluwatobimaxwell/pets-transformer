@@ -40,9 +40,11 @@ def write_summary(manifest: dict, folder: Path) -> Path:
     scenario = manifest["scenario"]
     rows = manifest["rows"]
     lines = [f"# {STATUS_WORDS[manifest['status']]}: {scenario['id']}", "", f"Recipient: {scenario['recipient']}", f"Purpose: {scenario['purpose']}", ""]
-    if manifest["scores"]:
-        s = manifest["scores"]
+    s = manifest["scores"] or {}
+    if s.get("privacy") is not None:
         lines += [f"Self-assessment: privacy {s['privacy']:.2f}, utility {s['utility']:.2f}, composite {s['composite']:.2f}", ""]
+    elif s.get("utility") is not None:
+        lines += [f"Usefulness: {s['utility']:.2f} (no challenge scorecard for this data)", ""]
     lines += [f"Rows kept: {rows.get('kept', 0):,} of {rows.get('total', 0):,}", "", "## What happened to each field"] + _pet_lines(manifest) + ["", "## Gate"] + _attempt_lines(manifest)
     lines += ["## Tasks"] + [f"- {t['id']}: {'not answerable' if t['score'] is None else format(t['score'], '.2f')}. {t['description']}" for t in manifest["tasks"]]
     lines += [""] + _residual_lines(manifest)

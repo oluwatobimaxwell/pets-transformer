@@ -1,0 +1,7 @@
+{
+  "export_2025_q4.c22": {"role": "quasi_identifier", "subtype": "OCCUPATION", "reason": "Job titles such as sairaanhoitaja (nurse)"},
+  "export_2025_q4.c21": {"role": "quasi_identifier", "subtype": "ORG_NAME", "reason": "Workplace names"},
+  "export_2025_q4.c15": {"role": "sensitive_attribute", "subtype": "HEALTH_DATA", "reason": "Sick days are health information"},
+  "export_2025_q4.c12": {"role": "non_sensitive", "subtype": "MEASUREMENT", "reason": "Contracted weekly hours"},
+  "export_2025_q4.c06": {"role": "quasi_identifier", "subtype": "BIRTH_DATE", "reason": "Birth dates in several formats"}
+}

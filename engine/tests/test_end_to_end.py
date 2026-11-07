@@ -40,3 +40,15 @@ def test_dashboard_shows_protected_rows_but_no_original_identifiers(tmp_path):
     page = (tmp_path / "run" / "evidence" / "dashboard.html").read_text()
     assert "aino0@kotiposti.example" not in page and "Aino Virtanen0" not in page
     assert '"name": "status"' in page and "rowmap" not in page.split("<script type")[1].split("</script>")[0]
+
+
+def test_a_written_scenario_runs_end_to_end_with_its_own_questions(tmp_path):
+    from pets_engine.utils.scenario_file import load_scenario_file
+    folder = small_folder(tmp_path)
+    spec = tmp_path / "scenario.yaml"
+    spec.write_text("trust_level: contractual\nquestions:\n  - count: true\n    by: [tickets.status]\n")
+    result = run_release(RunConfig(folder, tmp_path / "run", load_scenario_file(spec, "demo")))
+    manifest = json.loads((tmp_path / "run" / "evidence" / "manifest.json").read_text())
+    assert manifest["tasks"][0]["id"] == "Q1" and manifest["tasks"][0]["score"] == 1.0
+    assert {f["field"]: f["pet"] for f in manifest["fields"]}["tickets.email"] == "remove"
+    assert result.status == "release"

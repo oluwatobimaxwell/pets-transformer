@@ -19,17 +19,15 @@ def _plain_detail(detail: dict) -> list:
     return [{"name": key.replace("_", " "), "value": value} for key, value in (detail or {}).items() if isinstance(value, (int, float, str))]
 
 
-def _tasks(manifest: dict, scorecard: dict | None) -> list:
-    raw = {t["id"]: t for t in (scorecard or {}).get("utility", [])}
+def _tasks(manifest: dict) -> list:
     guide = explanations()["tasks"]
     out = []
     for task in manifest["tasks"]:
         wording = guide.get(task["id"], {})
-        full = raw.get(task["id"], {})
-        detail = full.get("detail") or {}
+        detail = task.get("detail") or {}
         capped = "f1_original" in detail and "f1_protected" in detail and detail["f1_protected"] > detail["f1_original"]
-        out.append({"id": task["id"], "question": wording.get("question", task["description"]), "scoring": wording.get("scoring", full.get("metric", "")),
-                    "needs": wording.get("needs", ""), "score": task["score"], "band": score_band(task["score"]), "metric": full.get("metric", ""),
+        out.append({"id": task["id"], "question": wording.get("question", task["description"]), "scoring": wording.get("scoring", task.get("metric", "")),
+                    "needs": wording.get("needs", ""), "score": task["score"], "band": score_band(task["score"]), "metric": task.get("metric", ""),
                     "detail": _plain_detail(detail), "comparison": side_by_side(detail), "change": plain_change(detail),
                     "note": "The rule scored higher on the protected data than on the original, so the score is capped at 1.00. Check that it isn't finding false alarms." if capped else ""})
     return out
@@ -61,9 +59,10 @@ def _headline(manifest: dict) -> list:
     tasks = manifest.get("tasks", [])
     working = sum(1 for t in tasks if t["score"] is not None and t["score"] >= 0.8)
     tiles = []
-    if scores:
-        tiles += [{"label": "Privacy", "value": scores["privacy"], "format": "score", "meaning": words["privacy"]},
-                  {"label": "Usefulness", "value": scores["utility"], "format": "score", "meaning": words["utility"]}]
+    if scores and scores.get("privacy") is not None:
+        tiles.append({"label": "Privacy", "value": scores["privacy"], "format": "score", "meaning": words["privacy"]})
+    if scores and scores.get("utility") is not None:
+        tiles.append({"label": "Usefulness", "value": scores["utility"], "format": "score", "meaning": words["utility"]})
     if rows.get("total"):
         tiles.append({"label": "Rows kept", "value": rows["kept"] / rows["total"], "format": "percent",
                       "meaning": f"{rows['kept']:,} of {rows['total']:,}. {words['rows']}"})
@@ -88,7 +87,7 @@ def dashboard_data(run_dir: Path) -> dict:
         raise FileNotFoundError(f"No manifest in {paths.evidence}. Run `pets-engine run` first.")
     scorecard = _read_json(paths.evidence / "scorecard.json")
     return {"engine": __version__, "run": paths.root.name, "generated_at": manifest["generated_at"], "status": manifest["status"],
-            "scenario": manifest["scenario"], "headline": _headline(manifest), "tasks": _tasks(manifest, scorecard), "risks": _risks(scorecard), "attacker": _attacker(manifest),
+            "scenario": manifest["scenario"], "headline": _headline(manifest), "tasks": _tasks(manifest), "risks": _risks(scorecard), "attacker": _attacker(manifest),
             "remaining": _remaining(manifest), "fields": manifest["fields"], "attempts": manifest["attempts"],
             "tuning": (manifest.get("tuning") or {}).get("levels", {}), "records": records_view(paths, manifest["fields"]),
             "composite": (manifest.get("scores") or {}).get("composite"), "composite_meaning": explanations()["headline"]["composite"]}

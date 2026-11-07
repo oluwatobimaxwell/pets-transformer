@@ -8,6 +8,7 @@ from ..domain.verdict import Verdict
 from ..utils.policy import policy
 from . import release_checks
 from .scorecard_checks import scorecard_checks
+from .task_results import from_scorecard, score_tasks, task_checks
 
 
 def person_key_column(plan: list, table: str):
@@ -17,7 +18,8 @@ def person_key_column(plan: list, table: str):
     return None
 
 
-def run_gate(attempt: int, config, plan: list, labels: list, release: dict, originals: dict, sources: dict, kept_share: float, folder: Path, rowmaps: dict, evidence: Path) -> tuple:
+def run_gate(attempt: int, config, plan: list, labels: list, tasks: list, release: dict, originals: dict, sources: dict, kept_share: float, folder: Path,
+             rowmaps: dict, evidence: Path) -> tuple:
     scenario: Scenario = config.scenario
     limit = policy()["gate"]["max_suppressed_rows"]
     checks = [
@@ -35,7 +37,11 @@ def run_gate(attempt: int, config, plan: list, labels: list, release: dict, orig
             clues = [c.output_column for c in plan if c.table == table and c.tunable]
             checks.append(release_checks.repeat_visitor_note(frame, key, clues))
     report = None
-    if config.package_root and scenario.task_ids:
+    if config.package_root and scenario.task_ids and not scenario.questions:
         extra, report = scorecard_checks(config, folder, rowmaps, evidence)
         checks += extra
-    return Verdict(attempt, checks), report
+        results = from_scorecard(report, scenario.task_ids)
+    else:
+        results = score_tasks(tasks, originals, release)
+    checks += task_checks(results)
+    return Verdict(attempt, checks), report, results

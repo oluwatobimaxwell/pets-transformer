@@ -22,13 +22,40 @@ export PETS_ENGINE_KEY="$(python3 -c 'import secrets; print(secrets.token_hex(24
 pets-engine scenarios                                              # list sharing scenarios
 pets-engine detect $PETS_ROOT/data/unseen --out labels.csv         # label columns in any folder of CSV files
 pets-engine run $PETS_ROOT/data/health --scenario HEALTH-S1 --out runs/health-s1
-pets-engine run ./my_data --trust contractual --keep orders.status --out runs/mine
+pets-engine init-scenario ./my_data --out scenario.yaml               # template listing every column Detect found
+pets-engine run ./my_data --scenario-file scenario.yaml --out runs/mine
+pets-engine run ./my_data --trust contractual --k 5 --keep orders.status --out runs/quick
 pets-engine evaluate                                               # detector score on left-out datasets
 pets-engine evaluate-text                                          # redaction score on held-out and never-tuned text
 pets-engine submission --out pets_submission --run health=runs/health-s1
 ```
 
 `run` exits with `0` when released, `2` when held for a person, and `3` when blocked.
+
+## Your own data: write a scenario
+
+A scenario file says who receives the data, how much they're trusted, the look-alike bar, and the questions they must still answer.
+Only the columns those questions need are released, and each question is scored before and after. A full example is in
+[examples/unseen_scenario.yaml](examples/unseen_scenario.yaml).
+
+```yaml
+id: PAY-RESEARCH
+recipient: University labour-market research group
+purpose: Study pay by occupation
+trust_level: controlled_research   # internal, controlled_research, contractual or public
+k: 5                               # every released row must look like at least 5 others
+questions:
+  - ask: What is the median monthly pay for each occupation?
+    median: export.salary
+    by: [export.occupation]
+  - count: true                    # how rows spread across groups
+    by: [export.workplace]
+  - correlation: [export.hours, export.salary]
+```
+
+Question kinds: `median`, `mean`, `count` (with `by`), `correlation` (two columns) and `distribution` (one column).
+Write columns as `table.column`, where the table is the CSV file's name. With no questions, every kept column gets a standard check
+that its distribution keeps its shape, and nothing is coarsened beyond what `k` requires.
 
 ## What a run produces
 
@@ -61,4 +88,4 @@ Free text is redacted in layers: formats and cue words, spoken numbers, the pers
 - Public scenarios are blocked, because the engine makes row-level releases and doesn't build aggregates yet.
 - `pets-eval` scores are self-assessment against public attackers, not official judging.
 - The name lexicon was written after reading the public catalogue, so detector scores are somewhat optimistic.
-- Task-based column selection needs the package's tasks. For other data, use `--trust` with `--keep`.
+- Attack tests with the public attacker files need the challenge package. On other data, the engine's own checks and stronger attacker still run.

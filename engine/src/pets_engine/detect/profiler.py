@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 
 from ..domain.column_profile import ColumnProfile
+from ..utils.numbers import to_number
 from ..utils.tables import non_blank
 from .patterns import PATTERNS
 
@@ -16,11 +17,6 @@ SEED = 7
 
 def value_shape(value: str) -> str:
     return re.sub(r"[a-zåäö]+", "a", re.sub(r"[A-ZÅÄÖ]+", "A", re.sub(r"\d", "9", value)))
-
-
-def to_number(series: pd.Series) -> pd.Series:
-    cleaned = series.str.replace(r"\s", "", regex=True).str.replace(",", ".", regex=False)
-    return pd.to_numeric(cleaned, errors="coerce")
 
 
 def profile_column(table: str, column: str, values: pd.Series) -> ColumnProfile:

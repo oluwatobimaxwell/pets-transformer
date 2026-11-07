@@ -17,7 +17,14 @@ def top_risks(report: dict | None) -> list:
     return [{"risk": name, "value": round(value, 3)} for name, value in ranked[:TOP_RISKS] if value >= NOTABLE_RISK]
 
 
-def build_manifest(config, labels: list, plan: list, tuned, verdicts: list, report: dict | None, rows: dict, attack: dict) -> dict:
+def _scores(report: dict | None, results: list):
+    if report:
+        return report["summary"]
+    answered = [t["score"] or 0.0 for t in results]
+    return {"utility": round(sum(answered) / len(answered), 4)} if answered else None
+
+
+def build_manifest(config, labels: list, plan: list, tuned, verdicts: list, report: dict | None, rows: dict, attack: dict, results: list) -> dict:
     labels_by_key = {label.key: label for label in labels}
     fields = []
     for choice in plan:
@@ -35,11 +42,10 @@ def build_manifest(config, labels: list, plan: list, tuned, verdicts: list, repo
         "tuning": tuned.to_dict() if tuned else None,
         "rows": rows,
         "attempts": [verdict.to_dict() for verdict in verdicts],
-        "scores": report["summary"] if report else None,
+        "scores": _scores(report, results),
         "top_risks": top_risks(report),
         "stronger_attacker": attack,
-        "tasks": [{"id": t["id"], "score": t.get("score"), "description": t.get("description", "")} for t in (report["utility"] if report else [])
-                  if t["id"] in config.scenario.task_ids],
+        "tasks": results,
     }
 
 

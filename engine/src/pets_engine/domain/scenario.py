@@ -17,6 +17,9 @@ class Scenario:
     purpose: str = ""
     targets: str = ""
     task_ids: tuple = field(default_factory=tuple)
+    questions: tuple = field(default_factory=tuple)
+    k: int | None = None
+    text_recall: float | None = None
 
     @classmethod
     def from_dict(cls, raw: dict) -> "Scenario":
@@ -29,12 +32,20 @@ class Scenario:
         return self.trust_level == "public"
 
     @property
+    def has_tasks(self) -> bool:
+        return bool(self.task_ids or self.questions)
+
+    @property
     def k_required(self) -> int:
-        """The look-alike bar the scenario states; 0 means it states none."""
+        """The look-alike bar: set directly, or stated in the targets text. 0 means none."""
+        if self.k is not None:
+            return self.k
         found = _K_BAR.search(self.targets)
         return int(found.group(1)) if found else 0
 
     @property
     def text_recall_required(self) -> float:
+        if self.text_recall is not None:
+            return self.text_recall
         found = _RECALL_BAR.search(self.targets)
         return float(found.group(1)) if found else 0.95

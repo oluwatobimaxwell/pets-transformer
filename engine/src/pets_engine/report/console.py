@@ -27,9 +27,11 @@ def print_result(result: RunResult) -> None:
         print(f"Attempt {verdict.attempt}: {verdict.status}")
         for failure in verdict.failures:
             print(f"  - {failure.name}: {failure.detail}")
-    scores = result.summary.get("scores")
-    if scores:
+    scores = result.summary.get("scores") or {}
+    if scores.get("privacy") is not None:
         print(f"Self-assessment: privacy {scores['privacy']:.2f}, utility {scores['utility']:.2f}, composite {scores['composite']:.2f}")
+    elif scores.get("utility") is not None:
+        print(f"Usefulness: {scores['utility']:.2f}")
     rows = result.summary.get("rows") or {}
     if rows:
         print(f"Rows kept: {rows['kept']:,} of {rows['total']:,}")

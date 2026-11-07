@@ -1,14 +1,15 @@
 """Finds what a scenario's tasks really need by removing columns and re-running the tasks."""
 from __future__ import annotations
 
+import hashlib
 import json
 import time
 from pathlib import Path
 
-
 from pets_eval.utility import UtilityTask, all_tasks
 
 from ..domain.scenario import Scenario
+from .questions import question_tasks
 
 CACHE_DIR = Path.home() / ".cache" / "pets-engine"
 TIME_BUDGET_SECONDS = 240
@@ -19,6 +20,8 @@ ROLE_ORDER = {"direct_identifier": 0, "technical_identifier": 1, "free_text": 2,
 
 
 def required_tasks(scenario: Scenario) -> list:
+    if scenario.questions:
+        return question_tasks(scenario)
     wanted = set(scenario.task_ids)
     return [task for task in all_tasks([scenario.dataset]) if task.id in wanted]
 
@@ -53,12 +56,11 @@ def _without_column(candidate: dict, table: str, column: str) -> dict:
     return trimmed
 
 
-def minimal_columns(scenario: Scenario, original: dict, labels: list) -> dict:
+def minimal_columns(scenario: Scenario, original: dict, labels: list, tasks: list) -> dict:
     """Backward elimination: drop each column unless a required task stops working."""
     cached = _read_cache(scenario)
     if cached is not None:
         return cached
-    tasks = required_tasks(scenario)
     quick, slow_names = _quick_tasks(tasks), _named_by_slow_tasks(tasks)
     started = time.monotonic()
     candidate = dict(original)
@@ -99,7 +101,9 @@ def with_join_keys(needed: dict, tables: dict) -> dict:
 
 
 def _cache_path(scenario: Scenario) -> Path:
-    return CACHE_DIR / f"needs_{scenario.id}.json"
+    """Written questions are part of the key, so editing a scenario file never reuses a stale answer."""
+    digest = hashlib.sha256(json.dumps([scenario.dataset, list(scenario.questions)], sort_keys=True).encode()).hexdigest()[:10]
+    return CACHE_DIR / f"needs_{scenario.id}_{digest}.json"
 
 
 def _read_cache(scenario: Scenario):

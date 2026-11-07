@@ -1,0 +1,18 @@
+# Example: the unnamed HR export, shared with researchers. Column meanings are our reading of the values.
+id: UNSEEN-PAY-RESEARCH
+recipient: University labour-market research group
+purpose: Study pay by occupation and sick leave by age in care work
+trust_level: controlled_research
+k: 5
+questions:
+  - ask: What is the median monthly pay for each occupation?
+    median: export_2025_q4.c11
+    by: [export_2025_q4.c22]
+  - ask: How many sick days do people take on average, by age band?
+    mean: export_2025_q4.c15
+    by: [export_2025_q4.c06]
+  - ask: How are staff spread across workplaces?
+    count: true
+    by: [export_2025_q4.c21]
+  - ask: Do longer contracted hours go with higher pay?
+    correlation: [export_2025_q4.c12, export_2025_q4.c11]

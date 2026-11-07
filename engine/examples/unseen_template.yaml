@@ -1,0 +1,42 @@
+# Scenario for unseen. Fill this in, then run:
+#   pets-engine run <data folder> --scenario-file scenario.yaml --out runs/<name>
+id: UNSEEN-1
+recipient: Who will receive the data
+purpose: What they will use it for
+trust_level: contractual        # internal, controlled_research, contractual or public
+k: 5                            # every released row must look like at least this many others
+
+# The questions the recipient must still be able to answer. Only columns these need are released.
+# Kinds: median, mean, count (needs `by`), correlation (two columns), distribution.
+questions:
+  - ask: An example question in plain words
+    median: table.column
+    by: [table.column]
+
+# Columns Detect found:
+#   export_2025_q4.c01                       record key, RECORD_ID
+#   export_2025_q4.c02                       technical identifier, RECORD_ID
+#   export_2025_q4.c03                       non sensitive, DATE
+#   export_2025_q4.c04                       direct identifier, PERSON_NAME
+#   export_2025_q4.c05                       direct identifier, NATIONAL_ID
+#   export_2025_q4.c06                       quasi identifier, BIRTH_DATE
+#   export_2025_q4.c07                       direct identifier, STREET_ADDRESS
+#   export_2025_q4.c08                       direct identifier, PHONE
+#   export_2025_q4.c09                       direct identifier, EMAIL
+#   export_2025_q4.c10                       direct identifier, IBAN
+#   export_2025_q4.c11                       sensitive attribute, FINANCIAL_DATA
+#   export_2025_q4.c12                       non sensitive, MEASUREMENT
+#   export_2025_q4.c13                       sensitive attribute, OTHER  (unsure)
+#   export_2025_q4.c14                       sensitive attribute, OTHER  (unsure)
+#   export_2025_q4.c15                       sensitive attribute, OTHER  (unsure)
+#   export_2025_q4.c16                       free text, FREE_TEXT
+#   export_2025_q4.c17                       technical identifier, RECORD_ID
+#   export_2025_q4.c18                       direct identifier, LICENSE_PLATE
+#   export_2025_q4.c19                       sensitive attribute, OTHER  (unsure)
+#   export_2025_q4.c20                       technical identifier, OTHER
+#   export_2025_q4.c21                       sensitive attribute, OTHER  (unsure)
+#   export_2025_q4.c22                       sensitive attribute, OTHER  (unsure)
+#   export_2025_q4.c23                       quasi identifier, DATE
+#   export_2025_q4.c24                       sensitive attribute, OTHER  (unsure)
+#   export_2025_q4.c25                       sensitive attribute, OTHER  (unsure)
+#   export_2025_q4.c26                       sensitive attribute, OTHER  (unsure)

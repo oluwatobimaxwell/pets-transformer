@@ -19,6 +19,7 @@ from .report.manifest import build_manifest, write_manifest
 from .report.summary import write_summary
 from .select.key_order import time_ordered_keys
 from .select.selector import select_pets
+from .select.standard_checks import standard_tasks
 from .select.task_needs import minimal_columns, required_tasks, tasks_using, with_join_keys
 from .text.column_redaction import group_column, redact_columns
 from .transform.keys import recipient_key
@@ -40,14 +41,16 @@ def _quiet(stage: str, message: str) -> None:
     return None
 
 
-def _needed_columns(config: RunConfig, tables: dict, labels: list) -> dict:
-    if config.scenario.task_ids:
-        return with_join_keys(minimal_columns(config.scenario, tables, labels), tables)
+def _needed_columns(config: RunConfig, tables: dict, labels: list, tasks: list) -> dict:
+    """Columns the questions need, plus any the person asked to keep. With no questions: harmless columns and the keep list."""
     wanted = set(config.keep)
-    keep = {label.key for label in labels if label.role == "non_sensitive" and not label.needs_review} | wanted
-    needed: dict = {}
+    if tasks:
+        needed = with_join_keys(minimal_columns(config.scenario, tables, labels, tasks), tables)
+    else:
+        needed = {}
+        wanted |= {label.key for label in labels if label.role == "non_sensitive" and not label.needs_review}
     for label in labels:
-        if label.key in keep:
+        if label.key in wanted and label.column not in needed.get(label.table, []):
             needed.setdefault(label.table, []).append(label.column)
     return needed
 
@@ -113,8 +116,9 @@ def _row_counts(release: dict, masks: dict) -> dict:
     return {"total": total, "kept": kept, "by_table": {t: {"total": len(f), "kept": int(masks[t].sum())} for t, f in release.items()}}
 
 
-def _finish(paths: RunPaths, config: RunConfig, labels: list, plan: list, tuned, verdicts: list, report, rows: dict, attack: dict | None = None) -> RunResult:
-    manifest = build_manifest(config, labels, plan, tuned, verdicts, report, rows, attack or {})
+def _finish(paths: RunPaths, config: RunConfig, labels: list, plan: list, tuned, verdicts: list, report, rows: dict, attack: dict | None = None,
+            results: list | None = None) -> RunResult:
+    manifest = build_manifest(config, labels, plan, tuned, verdicts, report, rows, attack or {}, results or [])
     write_manifest(manifest, paths.evidence)
     write_summary(manifest, paths.evidence)
     status = manifest["status"]
@@ -144,10 +148,13 @@ def run_release(config: RunConfig, on_event=_quiet) -> RunResult:
         return _finish(paths, config, labels, [], None, [_public_block(config)], None, {})
     tables = io.load_tables(config.data_dir)
     on_event("select", "Finding what the required tasks need")
-    tasks = required_tasks(config.scenario) if config.scenario.task_ids else []
-    needed = _needed_columns(config, tables, labels)
+    tasks = required_tasks(config.scenario) if config.scenario.has_tasks else []
+    needed = _needed_columns(config, tables, labels, tasks)
     time_leaks = time_ordered_keys(tables, labels) if config.scenario.k_required else set()
     plan = select_pets(labels, needed, config.scenario, time_leaks, _needed_by(labels, tasks))
+    if not tasks:
+        tasks = standard_tasks(plan, labels)
+        on_event("select", f"No questions given, so {len(tasks)} kept columns get a standard shape check")
     text = redact_columns(plan, tables, labels, on_event)
     transformer = Transformer(tables, plan, key, text)
     on_event("tune", "Searching settings")
@@ -157,17 +164,17 @@ def run_release(config: RunConfig, on_event=_quiet) -> RunResult:
         on_event("tune", f"Brought back {', '.join(repaired)}, so searching again")
         tuned = tune(transformer, plan, config.scenario, tasks, tables)
     release = transformer.build(tuned.levels)
-    verdicts, report, rows = [], None, {}
+    verdicts, report, rows, results = [], None, {}, []
     for attempt in range(1, MAX_ATTEMPTS + 1):
         masks = _keep_masks(config, tables, release, plan, labels) if attempt > 1 else {t: pd.Series(True, index=f.index) for t, f in release.items()}
         rows = _row_counts(release, masks)
         trimmed, rowmaps, sources = _write_release(config, paths, tables, release, masks, labels, key)
         on_event("verify", f"Attempt {attempt}: running the gate")
         kept_share = rows["kept"] / max(rows["total"], 1)
-        verdict, report = run_gate(attempt, config, plan, labels, trimmed, tables, sources, kept_share, paths.staged, rowmaps, paths.evidence)
+        verdict, report, results = run_gate(attempt, config, plan, labels, tasks, trimmed, tables, sources, kept_share, paths.staged, rowmaps, paths.evidence)
         verdicts.append(verdict)
         on_event("verify", f"Attempt {attempt}: {verdict.status}")
         if not verdict.has_failed(LOOK_ALIKE):
             break
     on_event("verify", "Running our stronger attacker")
-    return _finish(paths, config, labels, plan, tuned, verdicts, report, rows, stronger_attacker(trimmed, plan, labels))
+    return _finish(paths, config, labels, plan, tuned, verdicts, report, rows, stronger_attacker(trimmed, plan, labels), results)

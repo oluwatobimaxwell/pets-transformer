@@ -5,8 +5,7 @@ from pathlib import Path
 
 from pets_eval.scorecard import run_scorecard
 
-from ..domain.check import BLOCK, INFO, REVIEW, Check
-from ..domain.scenario import Scenario
+from ..domain.check import BLOCK, INFO, Check
 from ..utils.policy import policy
 
 LINKAGE, RETAINED, HASHED, TEXT = "linkage re-identification", "direct identifiers retained", "hashed ids reversible", "free-text identifier leakage"
@@ -28,19 +27,6 @@ def _threshold_check(title: str, report: dict, phrase: str, limit: float) -> Che
     return Check(title, worst <= limit, BLOCK, f"Worst {detail} (limit {limit})")
 
 
-def task_checks(report: dict, scenario: Scenario) -> list:
-    floor = policy()["gate"]["min_task_score"]
-    checks = []
-    for task in report["utility"]:
-        if task["id"] not in scenario.task_ids:
-            continue
-        score = task.get("score")
-        answered = score is not None and score >= floor
-        detail = "not answerable" if score is None else f"{score:.2f}"
-        checks.append(Check(f"Task {task['id']} still works", answered, REVIEW, f"{task.get('description', '')}: {detail}"))
-    return checks
-
-
 def scorecard_checks(config, release_dir: Path, rowmaps: dict, evidence_dir: Path) -> tuple:
     report = run_scorecard(config.data_dir, release_dir, scenario=config.scenario.id, root=config.package_root, rowmaps=rowmaps, out_dir=evidence_dir)
     gate = policy()["gate"]
@@ -52,4 +38,4 @@ def scorecard_checks(config, release_dir: Path, rowmaps: dict, evidence_dir: Pat
         _threshold_check("Text leakage within limit", report, TEXT, text_limit),
         Check("Self-assessment scores", True, INFO, f"privacy {report['summary']['privacy']:.2f}, utility {report['summary']['utility']:.2f}, composite {report['summary']['composite']:.2f}"),
     ]
-    return checks + task_checks(report, config.scenario), report
+    return checks, report

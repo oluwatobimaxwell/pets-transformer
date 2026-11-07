@@ -15,8 +15,11 @@ Self-assessment with the challenge's `pets-eval` toolkit, against its public att
 | `CS-S1` | AI vendor, contact-centre chats | Released | 1.00 | 0.97 | 100% |
 | `CYBER-S1` | Managed security provider | Released | 0.32 | 0.99 | 100% |
 | `HEALTH-S2` | Public dashboard | Blocked, by design | – | – | – |
+| `unseen`, with a written scenario | Labour-market researchers | Released on attempt 2, after a person's review | – | 0.95 | 95.4% |
 
-For comparison, the challenge's classic baseline (B2) reaches usefulness 0.79, 0.75 and 0.81 on these three scenarios.
+For comparison, the challenge's classic baseline (B2) reaches usefulness 0.79, 0.75 and 0.81 on the three challenge scenarios.
+The `unseen` file has meaningless column names and no answers in the package. Its scenario and questions were written by us, in
+[engine/examples/unseen_scenario.yaml](engine/examples/unseen_scenario.yaml), so it shows the engine on data it has never seen.
 
 - **Detect:** macro-F1 0.85 and sensitive-column recall 0.90 on datasets the model never trained on. The name lexicon was written after reading the public catalogue, so treat this as optimistic. Values alone, as in the unnamed `unseen` file, reach macro-F1 0.65.
 - **Text redaction:** 0.17% of identifying values survive in held-out chats, and 0.00–1.19% in three kinds of text the rules were never tuned on.
@@ -41,7 +44,14 @@ open runs/health-s1/evidence/dashboard.html
 
 The challenge package (`TRUSTED_PETS_PROVING_GROUND_2026`) sits next to this folder and isn't part of this repository. `.env` holds the secret behind every pseudonym, so it's excluded from git and must never be shared.
 
-See [engine/README.md](engine/README.md) for every command, the review flow and the output folders.
+For your own data, write a scenario file with the recipient, trust level, look-alike bar and the questions they need answered:
+
+```bash
+.venv/bin/pets-engine init-scenario ./my_data --out scenario.yaml
+.venv/bin/pets-engine run ./my_data --scenario-file scenario.yaml --out runs/mine
+```
+
+See [engine/README.md](engine/README.md) for every command, the scenario format, the review flow and the output folders.
 
 ## How it works
 

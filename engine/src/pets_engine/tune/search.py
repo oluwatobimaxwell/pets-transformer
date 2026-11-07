@@ -5,6 +5,7 @@ from itertools import product
 
 from ..domain.scenario import Scenario
 from ..domain.tune_result import TuneResult
+from ..select.standard_checks import STANDARD
 from ..select.task_needs import task_score
 from ..utils.policy import policy
 from .k_check import share_below_k
@@ -53,8 +54,13 @@ def _shortlist(transformer, plan: list, combos: list, k: int) -> list:
 
 
 def _gentlest_settings(transformer, dials: dict, tasks: list, original: dict) -> TuneResult:
-    """With no k bar, start from the most detail and coarsen each dial only while the tasks hold."""
+    """With no k bar, start from the most detail and coarsen each dial only while the tasks hold.
+
+    Standard checks compare shapes at the release's own detail, so they can't see detail being lost. With only those, nothing is coarsened.
+    """
     levels = {name: ladder[0] for name, ladder in dials.items()}
+    if all(task.kind == STANDARD for task in tasks):
+        return TuneResult(levels, 0.0, round(_mean_utility(tasks, original, transformer.build(levels)), 4) if tasks else 0.0, 1, [])
     best = _mean_utility(tasks, original, transformer.build(levels))
     scored = [{"levels": dict(levels), "below_k": 0.0, "utility": round(best, 4)}]
     for name, ladder in dials.items():

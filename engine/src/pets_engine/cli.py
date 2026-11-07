@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from dataclasses import replace
 import sys
 import webbrowser
 from pathlib import Path
@@ -19,6 +20,8 @@ from .report.console import print_labels, print_result, write_labels
 from .report.dashboard import write_dashboard
 from .text.evaluation import evaluate_text
 from .utils.package import custom_scenario, load_scenario, package_root
+from .utils.scenario_file import load_scenario_file
+from .utils.scenario_template import scenario_template
 from .utils.submission import build_submission
 from .utils.tables import read_text_tables
 
@@ -68,9 +71,14 @@ def cmd_run(args) -> int:
         if root is None:
             raise SystemExit("--scenario needs the challenge package. Pass --package or use --trust for your own data.")
         scenario = load_scenario(args.scenario, root)
+    elif args.scenario_file:
+        scenario = load_scenario_file(Path(args.scenario_file), data.name)
+        root = None
     else:
         scenario = custom_scenario(data.name, args.trust)
         root = None
+    if args.k is not None:
+        scenario = replace(scenario, k=args.k)
     keep = tuple(item for item in (args.keep or "").split(",") if item)
     config = RunConfig(data, Path(args.out), scenario, root, Path(args.review) if args.review else None, keep)
     result = run_release(config, lambda stage, message: print(f"[{stage}] {message}", file=sys.stderr))
@@ -83,6 +91,15 @@ def cmd_dashboard(args) -> int:
     print(target)
     if args.open:
         webbrowser.open(target.resolve().as_uri())
+    return 0
+
+
+def cmd_init_scenario(args) -> int:
+    data = Path(args.data)
+    labels = label_tables(read_text_tables(data), ColumnDetector.load())
+    target = Path(args.out)
+    target.write_text(scenario_template(data.name, labels), encoding="utf-8")
+    print(f"Wrote {target}. Fill in the recipient and questions, then run with --scenario-file {target}")
     return 0
 
 
@@ -112,10 +129,16 @@ def parser() -> argparse.ArgumentParser:
     choice = run.add_mutually_exclusive_group(required=True)
     choice.add_argument("--scenario", help="Scenario id, such as HEALTH-S1")
     choice.add_argument("--trust", choices=["internal", "controlled_research", "contractual", "public"], help="Trust level for data outside the package")
+    choice.add_argument("--scenario-file", help="A scenario you wrote: recipient, trust level, k and questions. See `pets-engine init-scenario`")
+    run.add_argument("--k", type=int, help="Every released row must look like at least k others")
     run.add_argument("--package", help="Challenge package folder")
     run.add_argument("--review", help="JSON file of a person's decisions")
     run.add_argument("--keep", help="Comma-separated table.column list to keep, for data outside the package")
     run.set_defaults(handler=cmd_run)
+    template = sub.add_parser("init-scenario", help="Write a scenario file to fill in, listing the columns Detect found")
+    template.add_argument("data")
+    template.add_argument("--out", default="scenario.yaml")
+    template.set_defaults(handler=cmd_init_scenario)
     dashboard = sub.add_parser("dashboard", help="Write the evidence dashboard for an existing run")
     dashboard.add_argument("run", help="Run folder, such as runs/health-s1")
     dashboard.add_argument("--open", action="store_true", help="Open it in the browser")
