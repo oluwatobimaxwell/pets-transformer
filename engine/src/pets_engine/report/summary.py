@@ -4,6 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from .answer_notes import answer_risk_lines, family_rows, guarantee_lines, standing_risks
+from .recoding_notes import recoding_lines
 
 STATUS_WORDS = {"release": "Released", "review": "Held for a person's review", "block": "Blocked"}
 
@@ -59,7 +60,8 @@ def write_summary(manifest: dict, folder: Path) -> Path:
     if answers:
         lines += _answer_lines(answers)
     else:
-        lines += [f"Rows kept: {rows.get('kept', 0):,} of {rows.get('total', 0):,}", "", "## What happened to each field"] + _pet_lines(manifest) + [""]
+        lines += [f"Rows kept: {rows.get('kept', 0):,} of {rows.get('total', 0):,}", ""] + recoding_lines(manifest.get("recoding")) + [""]
+        lines += ["## What happened to each field"] + _pet_lines(manifest) + [""]
     lines += ["## Gate"] + _attempt_lines(manifest)
     lines += ["## Tasks"] + [f"- {t['id']}: {'not answerable' if t['score'] is None else format(t['score'], '.2f')}. {t['description']}" for t in manifest["tasks"]]
     lines += [""] + _residual_lines(manifest) + [f"- {line}" for line in (answer_risk_lines(answers) if answers else [])]

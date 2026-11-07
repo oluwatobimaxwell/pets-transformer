@@ -14,6 +14,8 @@ DIGESTS = {32: ("MD5", hashlib.md5), 40: ("SHA-1", hashlib.sha1), 64: ("SHA-256"
 SAMPLE_VALUES = 5000
 MATCH_SHARE = 0.2
 SOURCE = "hash check"
+# Undoing a hash only matters when it gives back something that points at a person
+IDENTIFYING_ROLES = ("direct_identifier", "technical_identifier", "quasi_identifier")
 
 
 def _spellings(value: str) -> set:
@@ -59,6 +61,9 @@ def reverse_hashes(tables: dict, labels: list) -> list:
             continue
         other, algorithm, share = found
         source = by_key[f"{label.table}.{other}"]
+        if source.role not in IDENTIFYING_ROLES:
+            out.append(label)
+            continue
         out.append(FieldLabel(label.table, label.column, source.role, source.subtype, 0.99, SOURCE,
                               [f"{algorithm} of {other} with no key: {share:.0%} of its values hash to values here, so anyone can undo it"]))
     return out

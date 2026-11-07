@@ -93,7 +93,7 @@ To review a held run, write a JSON file of decisions and run again with `--revie
 2. **Select** starts from an allow-list. It re-runs the scenario's tasks with columns removed, and anything no task needs is dropped whatever its label. Readable rules in `data/rules.yaml` then choose a PET for what stays.
 3. **Tune** searches settings against real task scores, and brings a safe column back if coarsening broke a task.
 4. **Transform** applies the PETs. Keys differ per recipient, so two releases can't be joined.
-5. **Verify** checks the output against the original data, runs the attacks, and returns release, review or block. A look-alike failure goes back for suppression.
+5. **Verify** checks the output against the original data, runs the attacks, and returns release, review or block. A look-alike failure goes back for local recoding: rows that stand out lose one clue value at a time, and a row is removed only if that isn't enough.
 6. **Report** writes the field-by-field record, scores and remaining risks.
 
 Free text is redacted in layers: formats and cue words, spoken numbers, the person's own record, and names the data owner already holds. No LLM or external service sees the data.

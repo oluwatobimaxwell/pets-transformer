@@ -38,7 +38,7 @@ def _combinations(dials: dict) -> list:
     return combos[:MAX_COMBINATIONS]
 
 
-def _mean_utility(tasks: list, original: dict, release: dict) -> float:
+def mean_utility(tasks: list, original: dict, release: dict) -> float:
     scores = [task_score(task, original, release) or 0.0 for task in tasks]
     return sum(scores) / max(len(scores), 1)
 
@@ -60,18 +60,18 @@ def _gentlest_settings(transformer, dials: dict, tasks: list, original: dict) ->
     """
     levels = {name: ladder[0] for name, ladder in dials.items()}
     if all(task.kind == STANDARD for task in tasks):
-        return TuneResult(levels, 0.0, round(_mean_utility(tasks, original, transformer.build(levels)), 4) if tasks else 0.0, 1, [])
-    best = _mean_utility(tasks, original, transformer.build(levels))
+        return TuneResult(levels, 0.0, round(mean_utility(tasks, original, transformer.build(levels)), 4) if tasks else 0.0, 1, [])
+    best = mean_utility(tasks, original, transformer.build(levels))
     scored = [{"levels": dict(levels), "below_k": 0.0, "utility": round(best, 4)}]
     for name, ladder in dials.items():
         for level in ladder[1:]:
             trial = {**levels, name: level}
-            utility = _mean_utility(tasks, original, transformer.build(trial))
+            utility = mean_utility(tasks, original, transformer.build(trial))
             scored.append({"levels": trial, "below_k": 0.0, "utility": round(utility, 4)})
             if utility < best - UTILITY_MARGIN:
                 break
             levels = trial
-    return TuneResult(levels, 0.0, round(_mean_utility(tasks, original, transformer.build(levels)), 4), len(scored), scored)
+    return TuneResult(levels, 0.0, round(mean_utility(tasks, original, transformer.build(levels)), 4), len(scored), scored)
 
 
 def tune(transformer, plan: list, scenario: Scenario, tasks: list, original: dict) -> TuneResult:
@@ -82,7 +82,7 @@ def tune(transformer, plan: list, scenario: Scenario, tasks: list, original: dic
     combos = _combinations(dials)
     scored = []
     for below, _, levels in _shortlist(transformer, plan, combos, k):
-        utility = _mean_utility(tasks, original, transformer.build(levels))
+        utility = mean_utility(tasks, original, transformer.build(levels))
         scored.append({"levels": levels, "below_k": round(below, 4), "utility": round(utility, 4)})
     best = max(scored, key=lambda s: s["utility"] - s["below_k"] * 0.5)
     return TuneResult(best["levels"], best["below_k"], best["utility"], len(combos), scored)

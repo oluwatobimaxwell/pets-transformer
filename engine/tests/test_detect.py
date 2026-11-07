@@ -66,3 +66,27 @@ def test_an_unkeyed_hash_of_an_id_takes_the_id_label():
     assert (hashed.role, hashed.subtype, hashed.source) == ("direct_identifier", "NATIONAL_ID", "hash check")
     assert "SHA-256 of c05" in hashed.reasons[0]
     assert (unrelated.role, unrelated.subtype) == ("technical_identifier", "OTHER")
+
+
+def test_trade_union_codes_are_a_special_category_whatever_the_column_name():
+    from pets_engine.detect.special_categories import mark_special_categories
+    from pets_engine.domain.field_label import FieldLabel
+
+    frame = pd.DataFrame({"c13": ["AY-HL", "AY-PS", "AY-TK", "JHL", "TEHY"] * 10, "c03": ["open", "closed", "pending", "open", "open"] * 10})
+    labels = [FieldLabel("export", "c13", "non_sensitive", "CATEGORY", 0.5, "model"), FieldLabel("export", "c03", "non_sensitive", "CATEGORY", 0.5, "model")]
+    union, other = mark_special_categories({"export": frame}, labels)
+    assert (union.role, union.subtype) == ("sensitive_attribute", "SOCIAL_DATA")
+    assert (other.role, other.subtype) == ("non_sensitive", "CATEGORY")
+
+
+def test_a_hash_of_free_text_keeps_its_own_label():
+    import hashlib
+
+    from pets_engine.detect.hash_reversal import reverse_hashes
+    from pets_engine.domain.field_label import FieldLabel
+
+    commands = [f"powershell -enc payload{i}" for i in range(20)]
+    frame = pd.DataFrame({"command_line": commands, "sha256": [hashlib.sha256(c.encode()).hexdigest() for c in commands]})
+    labels = [FieldLabel("alerts", "command_line", "free_text", "FREE_TEXT", 0.9, "model"),
+              FieldLabel("alerts", "sha256", "technical_identifier", "OTHER", 0.99, "validator")]
+    assert reverse_hashes({"alerts": frame}, labels)[1].subtype == "OTHER"

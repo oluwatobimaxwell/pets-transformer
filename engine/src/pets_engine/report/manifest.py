@@ -25,7 +25,7 @@ def _scores(report: dict | None, results: list):
 
 
 def build_manifest(config, labels: list, plan: list, tuned, verdicts: list, report: dict | None, rows: dict, attack: dict, results: list,
-                   answers: dict | None = None) -> dict:
+                   answers: dict | None = None, recoding: dict | None = None) -> dict:
     labels_by_key = {label.key: label for label in labels}
     fields = []
     for choice in plan:
@@ -48,6 +48,7 @@ def build_manifest(config, labels: list, plan: list, tuned, verdicts: list, repo
         "stronger_attacker": attack,
         "tasks": results,
         "answers": answers,
+        "recoding": recoding or {},
     }
 
 

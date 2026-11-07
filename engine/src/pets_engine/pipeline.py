@@ -27,6 +27,7 @@ from .text.column_redaction import group_column, redact_columns
 from .transform.keys import recipient_key
 from .transform.row_order import shuffled_positions
 from .transform.transformer import Transformer
+from .tune.local_recoding import recode_release
 from .tune.repair import repair_plan
 from .tune.search import clue_columns, tune
 from .tune.suppression import linked_keep_masks, rows_to_keep
@@ -119,8 +120,8 @@ def _row_counts(release: dict, masks: dict) -> dict:
 
 
 def _finish(paths: RunPaths, config: RunConfig, labels: list, plan: list, tuned, verdicts: list, report, rows: dict, attack: dict | None = None,
-            results: list | None = None, answers: dict | None = None) -> RunResult:
-    manifest = build_manifest(config, labels, plan, tuned, verdicts, report, rows, attack or {}, results or [], answers)
+            results: list | None = None, answers: dict | None = None, recoding: dict | None = None) -> RunResult:
+    manifest = build_manifest(config, labels, plan, tuned, verdicts, report, rows, attack or {}, results or [], answers, recoding)
     write_manifest(manifest, paths.evidence)
     write_summary(manifest, paths.evidence)
     status = manifest["status"]
@@ -173,8 +174,11 @@ def run_release(config: RunConfig, on_event=_quiet) -> RunResult:
         on_event("tune", f"Brought back {', '.join(repaired)}, so searching again")
         tuned = tune(transformer, plan, config.scenario, tasks, tables)
     release = transformer.build(tuned.levels)
-    verdicts, report, rows, results = [], None, {}, []
+    verdicts, report, rows, results, recoding = [], None, {}, [], {}
     for attempt in range(1, MAX_ATTEMPTS + 1):
+        if attempt > 1:
+            on_event("verify", "Blanking one clue at a time in rows that stand out")
+            release, recoding = recode_release(release, plan, config.scenario.k_required, tasks, tables)
         masks = _keep_masks(config, tables, release, plan, labels) if attempt > 1 else {t: pd.Series(True, index=f.index) for t, f in release.items()}
         rows = _row_counts(release, masks)
         trimmed, rowmaps, sources = _write_release(config, paths, tables, release, masks, labels, key)
@@ -186,4 +190,4 @@ def run_release(config: RunConfig, on_event=_quiet) -> RunResult:
         if not verdict.has_failed(LOOK_ALIKE):
             break
     on_event("verify", "Running our stronger attacker")
-    return _finish(paths, config, labels, plan, tuned, verdicts, report, rows, stronger_attacker(trimmed, plan, labels), results)
+    return _finish(paths, config, labels, plan, tuned, verdicts, report, rows, stronger_attacker(trimmed, plan, labels), results, recoding=recoding)

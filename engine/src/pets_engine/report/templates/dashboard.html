@@ -304,6 +304,7 @@ function fields(){
   var levels = Object.keys(D.tuning || {});
   if (levels.length) kids.push(h("div", {class:"settings"}, [h("span", {class:"muted", text:"Settings Tune chose:"})].concat(levels.map(function(k){
     return h("span", {class:"pill neutral", text:(SUBTYPE[k] || k) + ": " + (LEVELS[D.tuning[k]] || D.tuning[k])}); }))));
+  (D.recoding || []).forEach(function(line){ kids.push(h("p", {class:"muted", text:line})); });
   kids.push(h("div", {class:"toolbar"}, [seg, search]));
   kids.push(h("div", {class:"card scroll"}, [h("table", {}, [h("thead", {}, [h("tr", {}, ["Field","Detected as","Technique","Why","Needed by"].map(function(c){ return h("th", {scope:"col", text:c}); }))]), body])]));
   $("fields").append.apply($("fields"), kids.filter(Boolean));

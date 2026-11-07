@@ -9,6 +9,7 @@ from ..domain.run_paths import RunPaths
 from ..utils.explanations import explanations, risk_wording, score_band
 from .answer_notes import answer_risk_lines, family_rows, guarantee_lines, standing_risks
 from .comparisons import plain_change, side_by_side
+from .recoding_notes import recoding_lines
 from .records import records_view
 
 
@@ -101,4 +102,4 @@ def dashboard_data(run_dir: Path) -> dict:
             "remaining": _remaining(manifest), "fields": manifest["fields"], "attempts": manifest["attempts"],
             "tuning": (manifest.get("tuning") or {}).get("levels", {}), "records": records_view(paths, manifest["fields"]),
             "composite": (manifest.get("scores") or {}).get("composite"), "composite_meaning": explanations()["headline"]["composite"],
-            "answers": _answers(manifest)}
+            "answers": _answers(manifest), "recoding": recoding_lines(manifest.get("recoding"))}
