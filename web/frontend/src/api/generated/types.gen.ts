@@ -5,6 +5,82 @@ export type ClientOptions = {
 };
 
 /**
+ * AnswerFamilyOut
+ *
+ * A family of published questions, how many there are, its share of the budget and the noise it gets.
+ */
+export type AnswerFamilyOut = {
+    /**
+     * Questions
+     */
+    questions: string;
+    /**
+     * Count
+     */
+    count: number;
+    /**
+     * Epsilon
+     */
+    epsilon: number;
+    /**
+     * Noise
+     */
+    noise: string;
+};
+
+/**
+ * AnswersOut
+ *
+ * For a public release, which gets noisy answers instead of rows: the guarantee in plain lines and the budget per family.
+ */
+export type AnswersOut = {
+    /**
+     * Guarantee
+     */
+    guarantee: Array<string>;
+    /**
+     * Families
+     */
+    families: Array<AnswerFamilyOut>;
+};
+
+/**
+ * AttackerOut
+ *
+ * The engine's own stronger attacker on one table: the share of known people it singles out with each kind of knowledge.
+ */
+export type AttackerOut = {
+    /**
+     * Table
+     */
+    table: string;
+    /**
+     * Clues
+     */
+    clues: Array<string>;
+    /**
+     * Clues Only
+     */
+    clues_only: number | null;
+    /**
+     * Worst Fact
+     */
+    worst_fact: string;
+    /**
+     * Worst Fact Value
+     */
+    worst_fact_value: number | null;
+    /**
+     * All Facts
+     */
+    all_facts: number | null;
+    /**
+     * Facts
+     */
+    facts: Array<string>;
+};
+
+/**
  * Body_upload_dataset
  */
 export type BodyUploadDataset = {
@@ -63,6 +139,26 @@ export type ColumnOut = {
 };
 
 /**
+ * ComparisonRowOut
+ *
+ * One answer to a required question, asked of the original data and of the protected data.
+ */
+export type ComparisonRowOut = {
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Before
+     */
+    before?: number | string | null;
+    /**
+     * After
+     */
+    after?: number | string | null;
+};
+
+/**
  * CustomScenarioIn
  *
  * A scenario written by the person releasing the data.
@@ -115,6 +211,277 @@ export type DatasetOut = {
 };
 
 /**
+ * EvidenceOut
+ *
+ * Everything behind a finished run's decision, for its page. The rows themselves come one table at a time.
+ */
+export type EvidenceOut = {
+    /**
+     * Engine
+     */
+    engine: string;
+    /**
+     * Run
+     */
+    run: string;
+    /**
+     * Generated At
+     */
+    generated_at: string;
+    /**
+     * Status
+     */
+    status: string;
+    scenario: ScenarioEvidenceOut;
+    /**
+     * Headline
+     */
+    headline: Array<HeadlineTileOut>;
+    /**
+     * Composite
+     */
+    composite?: number | null;
+    /**
+     * Composite Meaning
+     */
+    composite_meaning: string;
+    /**
+     * Tasks
+     */
+    tasks: Array<TaskEvidenceOut>;
+    /**
+     * Risks
+     */
+    risks: Array<RiskOut>;
+    /**
+     * Attacker
+     */
+    attacker: Array<AttackerOut>;
+    /**
+     * Remaining
+     */
+    remaining: Array<string>;
+    answers?: AnswersOut | null;
+    /**
+     * Fields
+     */
+    fields: Array<FieldEvidenceOut>;
+    /**
+     * Tuning
+     */
+    tuning: {
+        [key: string]: string;
+    };
+    /**
+     * Recoding
+     */
+    recoding: Array<string>;
+    /**
+     * Attempts
+     */
+    attempts: Array<GateAttemptOut>;
+    records: RecordsIndexOut;
+};
+
+/**
+ * FieldEvidenceOut
+ *
+ * One source column: what Detect saw, the technique Select chose, why, and which questions need it.
+ */
+export type FieldEvidenceOut = {
+    /**
+     * Field
+     */
+    field: string;
+    /**
+     * Role
+     */
+    role: string;
+    /**
+     * Subtype
+     */
+    subtype?: string | null;
+    /**
+     * Confidence
+     */
+    confidence?: number | null;
+    /**
+     * Detected By
+     */
+    detected_by?: string;
+    /**
+     * Evidence
+     */
+    evidence?: Array<string>;
+    /**
+     * Needs Review
+     */
+    needs_review?: boolean;
+    /**
+     * Pet
+     */
+    pet: string;
+    /**
+     * Output Column
+     */
+    output_column?: string;
+    /**
+     * Why
+     */
+    why: string;
+    /**
+     * Needed By
+     */
+    needed_by?: Array<string>;
+};
+
+/**
+ * GateAttemptOut
+ *
+ * One pass of the gate: every check and the status they add up to.
+ */
+export type GateAttemptOut = {
+    /**
+     * Attempt
+     */
+    attempt: number;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Checks
+     */
+    checks: Array<GateCheckOut>;
+};
+
+/**
+ * GateCheckOut
+ *
+ * One gate check on one attempt. `severity` is what a failure costs: block, review or info.
+ */
+export type GateCheckOut = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Passed
+     */
+    passed: boolean;
+    /**
+     * Severity
+     */
+    severity: string;
+    /**
+     * Detail
+     */
+    detail: string;
+};
+
+/**
+ * HeadlineTileOut
+ *
+ * One headline number of a release. `format` says how to show `value`: score, percent, count (of `total`) or epsilon.
+ */
+export type HeadlineTileOut = {
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Value
+     */
+    value: number;
+    /**
+     * Format
+     */
+    format: string;
+    /**
+     * Meaning
+     */
+    meaning: string;
+    /**
+     * Total
+     */
+    total?: number | null;
+};
+
+/**
+ * NamedValueOut
+ *
+ * A measurement behind a score, such as "rel error: 0.0006".
+ */
+export type NamedValueOut = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Value
+     */
+    value: number | string;
+};
+
+/**
+ * PreviewColumnOut
+ *
+ * One column that leaves: where it came from, its technique, and its first values before and after.
+ *
+ * `after` is empty until the protected rows are written; a single empty value is a row the gate withheld.
+ */
+export type PreviewColumnOut = {
+    /**
+     * Field
+     */
+    field: string;
+    /**
+     * Output Column
+     */
+    output_column: string;
+    /**
+     * Technique
+     */
+    technique: string;
+    /**
+     * Role
+     */
+    role: string;
+    /**
+     * Before
+     */
+    before?: Array<string> | null;
+    /**
+     * After
+     */
+    after?: Array<string | null> | null;
+};
+
+/**
+ * PreviewOut
+ *
+ * A few rows of a run, following the gate. No columns until Select decides. `before` only for synthetic challenge data.
+ */
+export type PreviewOut = {
+    /**
+     * Table
+     */
+    table: string;
+    /**
+     * Synthetic
+     */
+    synthetic: boolean;
+    /**
+     * Rows
+     */
+    rows: number;
+    /**
+     * Columns
+     */
+    columns: Array<PreviewColumnOut>;
+};
+
+/**
  * QuestionIn
  *
  * A question the recipient must still be able to answer. Columns are written as table.column.
@@ -139,6 +506,78 @@ export type QuestionIn = {
 };
 
 /**
+ * RecordColumnOut
+ *
+ * A released column, the technique that made it and the source column it came from. Empty for answer tables.
+ */
+export type RecordColumnOut = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Technique
+     */
+    technique: string;
+    /**
+     * Source
+     */
+    source: string;
+    /**
+     * Role
+     */
+    role: string;
+};
+
+/**
+ * RecordTableOut
+ *
+ * A released or staged table: how many rows it has and a random sample of them, in column order.
+ */
+export type RecordTableOut = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Shown
+     */
+    shown: number;
+    /**
+     * Columns
+     */
+    columns: Array<RecordColumnOut>;
+    /**
+     * Rows
+     */
+    rows: Array<Array<unknown>>;
+};
+
+/**
+ * RecordsIndexOut
+ *
+ * Whether rows were released, held for review or not written ("none"), and the names of their tables.
+ */
+export type RecordsIndexOut = {
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Tables
+     */
+    tables: Array<string>;
+    /**
+     * Limit
+     */
+    limit: number;
+};
+
+/**
  * ReviewDecisionIn
  *
  * A person's decision about one column, overriding Detect.
@@ -156,6 +595,34 @@ export type ReviewDecisionIn = {
      * Reason
      */
     reason?: string;
+};
+
+/**
+ * RiskOut
+ *
+ * One scorecard risk for one table, from 0 (none found) to 1 (every record exposed).
+ */
+export type RiskOut = {
+    /**
+     * Table
+     */
+    table: string;
+    /**
+     * Metric
+     */
+    metric: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Meaning
+     */
+    meaning: string;
+    /**
+     * Value
+     */
+    value: number;
 };
 
 /**
@@ -272,6 +739,34 @@ export type SampleRequest = {
 };
 
 /**
+ * ScenarioEvidenceOut
+ *
+ * Who the release is for and why. Data outside the challenge package has no recipient or purpose.
+ */
+export type ScenarioEvidenceOut = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Trust Level
+     */
+    trust_level: string;
+    /**
+     * Recipient
+     */
+    recipient?: string | null;
+    /**
+     * Purpose
+     */
+    purpose?: string | null;
+    /**
+     * K Required
+     */
+    k_required?: number | null;
+};
+
+/**
  * ScenarioOut
  *
  * One of the challenge's sharing scenarios.
@@ -316,6 +811,26 @@ export type ScenarioOut = {
 };
 
 /**
+ * ScoreBandOut
+ *
+ * The engine's reading of a score: a word such as "Close", its tone and what it means.
+ */
+export type ScoreBandOut = {
+    /**
+     * Word
+     */
+    word: string;
+    /**
+     * Tone
+     */
+    tone: string;
+    /**
+     * Meaning
+     */
+    meaning?: string;
+};
+
+/**
  * TableOut
  */
 export type TableOut = {
@@ -327,6 +842,75 @@ export type TableOut = {
      * Columns
      */
     columns: Array<string>;
+};
+
+/**
+ * TaskEvidenceOut
+ *
+ * A question the recipient must still be able to answer, how it's scored, and both answers side by side.
+ */
+export type TaskEvidenceOut = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Question
+     */
+    question: string;
+    /**
+     * Scoring
+     */
+    scoring: string;
+    /**
+     * Needs
+     */
+    needs: string;
+    /**
+     * Score
+     */
+    score: number | null;
+    band: ScoreBandOut;
+    /**
+     * Metric
+     */
+    metric: string;
+    /**
+     * Detail
+     */
+    detail: Array<NamedValueOut>;
+    /**
+     * Comparison
+     */
+    comparison: Array<ComparisonRowOut>;
+    /**
+     * Change
+     */
+    change: string;
+    /**
+     * Note
+     */
+    note: string;
+};
+
+/**
+ * TechniqueRulesOut
+ *
+ * The technique each role gets when a question needs the column, and the subtypes that override it.
+ */
+export type TechniqueRulesOut = {
+    /**
+     * Roles
+     */
+    roles: {
+        [key: string]: string;
+    };
+    /**
+     * Subtypes
+     */
+    subtypes: {
+        [key: string]: string;
+    };
 };
 
 export type ListSamplesData = {
@@ -501,7 +1085,7 @@ export type GetRunResponses = {
 
 export type GetRunResponse = GetRunResponses[keyof GetRunResponses];
 
-export type GetDashboardData = {
+export type GetEvidenceData = {
     body?: never;
     path: {
         /**
@@ -510,15 +1094,42 @@ export type GetDashboardData = {
         run_id: string;
     };
     query?: never;
-    url: '/api/runs/{run_id}/dashboard/';
+    url: '/api/runs/{run_id}/evidence/';
 };
 
-export type GetDashboardResponses = {
+export type GetEvidenceResponses = {
     /**
      * Successful Response
      */
-    200: unknown;
+    200: EvidenceOut;
 };
+
+export type GetEvidenceResponse = GetEvidenceResponses[keyof GetEvidenceResponses];
+
+export type GetRecordsData = {
+    body?: never;
+    path: {
+        /**
+         * Run Id
+         */
+        run_id: string;
+        /**
+         * Table
+         */
+        table: string;
+    };
+    query?: never;
+    url: '/api/runs/{run_id}/records/{table}/';
+};
+
+export type GetRecordsResponses = {
+    /**
+     * Successful Response
+     */
+    200: RecordTableOut;
+};
+
+export type GetRecordsResponse = GetRecordsResponses[keyof GetRecordsResponses];
 
 export type DownloadData = {
     body?: never;
@@ -542,3 +1153,40 @@ export type DownloadResponses = {
      */
     200: unknown;
 };
+
+export type GetPreviewData = {
+    body?: never;
+    path: {
+        /**
+         * Run Id
+         */
+        run_id: string;
+    };
+    query?: never;
+    url: '/api/runs/{run_id}/preview/';
+};
+
+export type GetPreviewResponses = {
+    /**
+     * Successful Response
+     */
+    200: PreviewOut;
+};
+
+export type GetPreviewResponse = GetPreviewResponses[keyof GetPreviewResponses];
+
+export type GetTechniqueRulesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/policy/techniques/';
+};
+
+export type GetTechniqueRulesResponses = {
+    /**
+     * Successful Response
+     */
+    200: TechniqueRulesOut;
+};
+
+export type GetTechniqueRulesResponse = GetTechniqueRulesResponses[keyof GetTechniqueRulesResponses];

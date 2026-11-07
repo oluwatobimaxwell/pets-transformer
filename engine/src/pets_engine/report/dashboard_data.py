@@ -10,7 +10,7 @@ from ..utils.explanations import explanations, risk_wording, score_band
 from .answer_notes import answer_risk_lines, family_rows, guarantee_lines, standing_risks
 from .comparisons import plain_change, side_by_side
 from .recoding_notes import recoding_lines
-from .records import records_view
+from .records import records_index, records_view
 
 
 def _read_json(path: Path):
@@ -91,7 +91,8 @@ def _remaining(manifest: dict) -> list:
     return notes + (answer_risk_lines(manifest["answers"]) if manifest.get("answers") else [])
 
 
-def dashboard_data(run_dir: Path) -> dict:
+def evidence_data(run_dir: Path) -> dict:
+    """Everything the dashboard shows except the rows themselves: the records hold only their tables' names."""
     paths = RunPaths(Path(run_dir))
     manifest = _read_json(paths.evidence / "manifest.json")
     if manifest is None:
@@ -100,6 +101,12 @@ def dashboard_data(run_dir: Path) -> dict:
     return {"engine": __version__, "run": paths.root.name, "generated_at": manifest["generated_at"], "status": manifest["status"],
             "scenario": manifest["scenario"], "headline": _headline(manifest), "tasks": _tasks(manifest), "risks": _risks(scorecard), "attacker": _attacker(manifest),
             "remaining": _remaining(manifest), "fields": manifest["fields"], "attempts": manifest["attempts"],
-            "tuning": (manifest.get("tuning") or {}).get("levels", {}), "records": records_view(paths, manifest["fields"]),
+            "tuning": (manifest.get("tuning") or {}).get("levels", {}), "records": records_index(paths),
             "composite": (manifest.get("scores") or {}).get("composite"), "composite_meaning": explanations()["headline"]["composite"],
             "answers": _answers(manifest), "recoding": recoding_lines(manifest.get("recoding"))}
+
+
+def dashboard_data(run_dir: Path) -> dict:
+    """The evidence with a sample of every released table's rows, for the self-contained dashboard file."""
+    data = evidence_data(run_dir)
+    return {**data, "records": records_view(RunPaths(Path(run_dir)), data["fields"])}

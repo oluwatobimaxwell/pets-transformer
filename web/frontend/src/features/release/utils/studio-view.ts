@@ -1,8 +1,5 @@
-import type { ColumnOut, RunOut } from '@/api/generated'
+import type { RunOut } from '@/api/generated'
 import { CORE_COLORS, IDLE_SCENE, type CoreScene } from '@/shared/components/core-model'
-import type { ReleaseDraft } from '../types'
-import { roleCounts } from './role-counts'
-import { roleWord } from './role-words'
 import { statusWord } from './status-words'
 
 /** One live figure beside the 3D model. Numbers count between values, so the format is a key, not a function. */
@@ -20,12 +17,17 @@ export interface LegendItem {
   text: string
 }
 
-/** What the studio's rail shows: the model's state, a sentence saying what it shows, a legend and two figures. */
-export interface StudioView {
+/** One state of the data in the rail: the model's state, a sentence saying what it shows, a legend and two figures. */
+export interface DataView {
   scene: CoreScene
   caption: string
   legend: LegendItem[]
   readouts: Readout[]
+}
+
+/** What the studio's rail shows. With `original`, the rail can switch between the data as it came in and as the gate left it. */
+export interface StudioView extends DataView {
+  original?: DataView
 }
 
 /** The group size drawn for protected rows. Visual only: the caption never claims a k the run didn't report. */
@@ -36,61 +38,6 @@ export const EMPTY_VIEW: StudioView = {
   caption: 'Choose data and its model assembles here.',
   legend: [],
   readouts: [],
-}
-
-function columnCount(draft: ReleaseDraft) {
-  return (draft.dataset?.tables ?? []).reduce((sum, table) => sum + table.columns.length, 0)
-}
-
-/**
- * The model during the four steps. It follows the data's state, not the page:
- * no data is an idle sphere; chosen data is a lattice of records; once Detect has read the columns the lattice is
- * layered by role, and a person's decisions move the layers; while something is being sent it spins up and scans.
- */
-export function draftView(step: number, draft: ReleaseDraft, columns: ColumnOut[] | undefined, busy: boolean): StudioView {
-  const dataset = draft.dataset
-  if (!dataset) return { ...EMPTY_VIEW, scene: { ...IDLE_SCENE, busy } }
-
-  const tables = dataset.tables.length
-  const cols = columnCount(draft)
-  const scene: CoreScene = { ...IDLE_SCENE, mode: 'data', busy }
-  const baseReadouts: Readout[] = [
-    { label: 'Tables', value: tables, format: 'int' },
-    { label: 'Columns', value: cols, format: 'int' },
-  ]
-  const dataCaption = `${dataset.name}: ${tables} ${tables === 1 ? 'table' : 'tables'} and ${cols} columns. Each point stands for an equal share of the records.`
-
-  if (step < 2) return { scene, caption: dataCaption, legend: [], readouts: baseReadouts }
-
-  if (!columns) {
-    return {
-      scene: { ...scene, busy: true },
-      caption: 'Detect is reading every column from its values and its name.',
-      legend: [],
-      readouts: baseReadouts,
-    }
-  }
-
-  const counts = roleCounts(columns, draft.decisions)
-  const total = counts.reduce((sum, c) => sum + c.count, 0) || 1
-  const unsure = columns.filter((column) => column.needs_review && !draft.decisions[column.key]).length
-  const decided = Object.keys(draft.decisions).length
-  return {
-    scene: { ...scene, mode: 'classes', layers: counts.map(({ role, count }) => ({ color: roleWord(role).hex, share: count / total })) },
-    caption: step === 2
-      ? 'Layers show your columns by role. Change a decision and the layers follow.'
-      : 'Ready. The gate will attack this data before anything leaves.',
-    legend: counts.map(({ role, count }) => ({ color: roleWord(role).hex, text: `${roleWord(role).label} ${count}` })),
-    readouts: step === 2
-      ? [
-          { label: 'Columns', value: columns.length, format: 'int' },
-          { label: 'Unsure', value: unsure, format: 'int', note: unsure ? 'to confirm' : 'all settled', tone: unsure ? 'hot' : 'cool' },
-        ]
-      : [
-          { label: 'Columns', value: columns.length, format: 'int' },
-          { label: 'Your decisions', value: decided, format: 'int' },
-        ],
-  }
 }
 
 interface RunSummary {

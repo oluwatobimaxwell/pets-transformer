@@ -18,6 +18,7 @@ from .domain.run_result import RunResult
 from .domain.verdict import Verdict
 from .report.dashboard import write_dashboard
 from .report.manifest import build_manifest, write_manifest
+from .report.plan_file import write_plan
 from .report.summary import write_summary
 from .select.key_order import time_ordered_keys
 from .select.selector import select_pets
@@ -31,6 +32,7 @@ from .tune.local_recoding import recode_release
 from .tune.repair import repair_plan
 from .tune.search import clue_columns, tune
 from .tune.suppression import linked_keep_masks, rows_to_keep
+from .utils.numbers import whole_numbers
 from .utils.tables import read_text_tables
 from .verify.gate import run_gate
 from .verify.strong_attacker import stronger_attacker
@@ -103,7 +105,7 @@ def _write_release(config: RunConfig, paths: RunPaths, tables: dict, release: di
         shuffled = kept.iloc[order].reset_index(drop=True)
         sources[table] = kept.index[order]
         trimmed[table] = shuffled
-        shuffled.to_csv(paths.staged / f"{table}.csv", index=False)
+        whole_numbers(shuffled).to_csv(paths.staged / f"{table}.csv", index=False)
         record_key = _record_key(config, table, tables[table], labels)
         if record_key:
             target = paths.private / f"rowmap_{table}.csv"
@@ -162,6 +164,7 @@ def run_release(config: RunConfig, on_event=_quiet) -> RunResult:
     needed = _needed_columns(config, tables, labels, tasks)
     time_leaks = time_ordered_keys(tables, labels) if config.scenario.k_required else set()
     plan = select_pets(labels, needed, config.scenario, time_leaks, _needed_by(labels, tasks))
+    write_plan(paths.plan, plan, labels)
     if not tasks:
         tasks = standard_tasks(plan, labels)
         on_event("select", f"No questions given, so {len(tasks)} kept columns get a standard shape check")
@@ -171,6 +174,7 @@ def run_release(config: RunConfig, on_event=_quiet) -> RunResult:
     tuned = tune(transformer, plan, config.scenario, tasks, tables)
     plan, repaired = repair_plan(transformer, plan, labels, tuned.levels, tasks, tables, config.scenario)
     if repaired:
+        write_plan(paths.plan, plan, labels)
         on_event("tune", f"Brought back {', '.join(repaired)}, so searching again")
         tuned = tune(transformer, plan, config.scenario, tasks, tables)
     release = transformer.build(tuned.levels)

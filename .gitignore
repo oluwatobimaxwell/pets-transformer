@@ -1,12 +1,14 @@
+# Engine output folders live at the repository root only: a bare `runs/` would also hide source folders such as
+# web/frontend/src/pages/runs.
 .venv/
 __pycache__/
 *.egg-info/
 .pytest_cache/
 .env
-runs/
-pets_submission/
+/runs/
+/pets_submission/
 *.joblib.tmp
 .DS_Store
 dist/
-workspace/
+/workspace/
 node_modules/

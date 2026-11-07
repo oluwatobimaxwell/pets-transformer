@@ -28,3 +28,9 @@ export const GATE_STAGES = [
   { key: 'transform', label: 'Transform', says: 'Pseudonymises and generalises' },
   { key: 'verify', label: 'Verify', says: 'Attacks it, then decides' },
 ] as const
+
+/** A public recipient's run: the data is read, then answered with differential privacy instead of released as rows. */
+export const ANSWER_STAGES = [
+  { key: 'detect', label: 'Detect', says: 'Labels every column' },
+  { key: 'answers', label: 'Answer', says: 'Noisy answers, no rows' },
+] as const

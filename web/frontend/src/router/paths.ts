@@ -11,6 +11,8 @@ export enum Path {
   ReleaseRecipient = '/release/recipient',
   ReleaseColumns = '/release/columns',
   ReleaseRun = '/release/run',
+  /** The gate working on a release just started, until it decides. */
+  ReleaseRunning = '/release/running/:runId',
   /** Every run on this machine, newest first. */
   Runs = '/runs',
   Run = '/runs/:runId',

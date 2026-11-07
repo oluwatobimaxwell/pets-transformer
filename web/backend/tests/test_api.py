@@ -37,7 +37,11 @@ def test_an_upload_is_detected_and_released_without_its_identifiers(api_client):
     release = api_client.get(f"/api/runs/{run['id']}/download/release/")
     assert release.status_code == 200 and release.headers["content-type"] == "application/zip"
     assert b"kotiposti" not in release.content
-    assert api_client.get(f"/api/runs/{run['id']}/dashboard/").status_code == 200
+    evidence = api_client.get(f"/api/runs/{run['id']}/evidence/").json()
+    assert evidence["status"] == "release" and evidence["records"]["tables"] == ["tickets"]
+    table = api_client.get(f"/api/runs/{run['id']}/records/tickets/").json()
+    assert table["total"] == 40 and b"kotiposti" not in str(table["rows"]).encode()
+    assert api_client.get(f"/api/runs/{run['id']}/records/private/").status_code == 404
 
 
 def test_private_files_and_other_folders_cannot_be_downloaded(api_client):

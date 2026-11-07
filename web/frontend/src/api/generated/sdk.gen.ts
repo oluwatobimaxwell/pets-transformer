@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { DownloadData, DownloadResponses, GetColumnsData, GetColumnsResponses, GetDashboardData, GetDashboardResponses, GetDatasetData, GetDatasetResponses, GetRunData, GetRunResponses, ListRunsData, ListRunsResponses, ListSamplesData, ListSamplesResponses, ListScenariosData, ListScenariosResponses, RegisterSampleData, RegisterSampleResponses, StartRunData, StartRunResponses, UploadDatasetData, UploadDatasetResponses } from './types.gen';
+import type { DownloadData, DownloadResponses, GetColumnsData, GetColumnsResponses, GetDatasetData, GetDatasetResponses, GetEvidenceData, GetEvidenceResponses, GetPreviewData, GetPreviewResponses, GetRecordsData, GetRecordsResponses, GetRunData, GetRunResponses, GetTechniqueRulesData, GetTechniqueRulesResponses, ListRunsData, ListRunsResponses, ListSamplesData, ListSamplesResponses, ListScenariosData, ListScenariosResponses, RegisterSampleData, RegisterSampleResponses, StartRunData, StartRunResponses, UploadDatasetData, UploadDatasetResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -86,11 +86,26 @@ export const startRun = <ThrowOnError extends boolean = false>(options: Options<
 export const getRun = <ThrowOnError extends boolean = false>(options: Options<GetRunData, ThrowOnError>) => (options.client ?? client).get<GetRunResponses, unknown, ThrowOnError>({ url: '/api/runs/{run_id}/', ...options });
 
 /**
- * Get Dashboard
+ * Get Evidence
  */
-export const getDashboard = <ThrowOnError extends boolean = false>(options: Options<GetDashboardData, ThrowOnError>) => (options.client ?? client).get<GetDashboardResponses, unknown, ThrowOnError>({ url: '/api/runs/{run_id}/dashboard/', ...options });
+export const getEvidence = <ThrowOnError extends boolean = false>(options: Options<GetEvidenceData, ThrowOnError>) => (options.client ?? client).get<GetEvidenceResponses, unknown, ThrowOnError>({ url: '/api/runs/{run_id}/evidence/', ...options });
+
+/**
+ * Get Records
+ */
+export const getRecords = <ThrowOnError extends boolean = false>(options: Options<GetRecordsData, ThrowOnError>) => (options.client ?? client).get<GetRecordsResponses, unknown, ThrowOnError>({ url: '/api/runs/{run_id}/records/{table}/', ...options });
 
 /**
  * Download
  */
 export const download = <ThrowOnError extends boolean = false>(options: Options<DownloadData, ThrowOnError>) => (options.client ?? client).get<DownloadResponses, unknown, ThrowOnError>({ url: '/api/runs/{run_id}/download/{part}/', ...options });
+
+/**
+ * Get Preview
+ */
+export const getPreview = <ThrowOnError extends boolean = false>(options: Options<GetPreviewData, ThrowOnError>) => (options.client ?? client).get<GetPreviewResponses, unknown, ThrowOnError>({ url: '/api/runs/{run_id}/preview/', ...options });
+
+/**
+ * Get Technique Rules
+ */
+export const getTechniqueRules = <ThrowOnError extends boolean = false>(options?: Options<GetTechniqueRulesData, ThrowOnError>) => (options?.client ?? client).get<GetTechniqueRulesResponses, unknown, ThrowOnError>({ url: '/api/policy/techniques/', ...options });

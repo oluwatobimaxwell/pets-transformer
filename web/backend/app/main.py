@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.errors import use_drf_errors
-from app.routers import datasets, runs, samples, scenarios
+from app.routers import datasets, policy, runs, samples, scenarios
 from app.utils.openapi import operation_name
 # blacksmith:import
 
@@ -40,4 +40,5 @@ app.include_router(samples.router, prefix="/api/samples", tags=["samples"])
 app.include_router(scenarios.router, prefix="/api/scenarios", tags=["scenarios"])
 app.include_router(datasets.router, prefix="/api/datasets", tags=["datasets"])
 app.include_router(runs.router, prefix="/api/runs", tags=["runs"])
+app.include_router(policy.router, prefix="/api/policy", tags=["policy"])
 # blacksmith:routers

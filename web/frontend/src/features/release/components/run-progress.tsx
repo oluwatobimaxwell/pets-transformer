@@ -6,12 +6,16 @@ import { stageIcon, stagePalette } from '../utils/stage-words'
 interface RunProgressProps {
   events: RunEventOut[]
   running: boolean
+  /** Inside a card that already draws the border. */
+  bare?: boolean
+  /** One line per stage, for a side column. */
+  dense?: boolean
 }
 
 /** Each stage as it happens, as a timeline: detect, select, tune, verify, then the decision. Each stage has its own tag colour. */
-export function RunProgress({ events, running }: RunProgressProps) {
+export function RunProgress({ events, running, bare = false, dense = false }: RunProgressProps) {
   return (
-    <Box borderWidth="1px" borderColor="border" bg="bg.panel" rounded="l3" p={{ base: '4', md: '5' }}>
+    <Box {...(bare ? {} : { borderWidth: '1px', borderColor: 'border', bg: 'bg.panel', rounded: 'l3', p: { base: '4', md: '5' } })}>
       <Stack as="ol" gap="0" listStyleType="none" aria-live="polite" aria-label="Run progress">
         {events.map((event, index) => {
           const StageIcon = stageIcon(event.stage)
@@ -25,10 +29,10 @@ export function RunProgress({ events, running }: RunProgressProps) {
                 </Circle>
                 {!last && <Box aria-hidden="true" w="1px" flex="1" minH="3" bg="border" />}
               </Stack>
-              <HStack flex="1" justify="space-between" align="start" gap="3" pb="3" pt="0.5" minW="0">
-                <Stack gap="1" minW="0">
-                  <Badge colorPalette={palette} variant="subtle" size="sm" fontFamily="mono" alignSelf="start">{event.stage}</Badge>
-                  <Text textStyle="sm">{event.message}</Text>
+              <HStack flex="1" justify="space-between" align="start" gap="3" pb={dense ? '2' : '3'} pt="0.5" minW="0">
+                <Stack gap="1" minW="0" direction={dense ? 'row' : 'column'} align={dense ? 'baseline' : 'stretch'}>
+                  <Badge colorPalette={palette} variant="subtle" size="sm" fontFamily="mono" alignSelf="start" flexShrink="0">{event.stage}</Badge>
+                  <Text textStyle={dense ? 'xs' : 'sm'} color={dense ? 'fg.muted' : 'fg'}>{event.message}</Text>
                 </Stack>
                 <Text textStyle="xs" color="fg.subtle" fontFamily="mono" flexShrink="0">{event.at.slice(11, 19)}</Text>
               </HStack>

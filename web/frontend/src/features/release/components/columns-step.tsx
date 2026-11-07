@@ -1,21 +1,29 @@
 import { HStack, Skeleton, Stack, Table, Text } from '@chakra-ui/react'
-import { getColumnsOptions } from '@/api/generated/@tanstack/react-query.gen'
+import { getColumnsOptions, getTechniqueRulesOptions } from '@/api/generated/@tanstack/react-query.gen'
 import { useApiQuery } from '@/shared/hooks/use-api-query'
 import { StatusAlert } from '@/shared/components/status-alert'
 import type { ReleaseDraftApi } from '../hooks/use-release-draft'
 import { roleCounts } from '../utils/role-counts'
 import { unsureFirst } from '../utils/sort-columns'
+import { techniqueCounts } from '../utils/technique-counts'
+import { techniqueFor } from '../utils/technique-for'
 import { ColumnRow } from './column-row'
 import { RoleBadge } from './role-badge'
+import { TechniqueChip } from './technique-chip'
 
 interface ColumnsStepProps {
   api: ReleaseDraftApi
 }
 
-/** What Detect found in every column. Unsure columns come first, for a person to confirm or correct. */
+/** One row after another, so the picking reads as the gate working down the table. */
+const PICK_STEP_MS = 70
+const PICK_START_MS = 300
+
+/** What Detect found in every column and the technique each would get. Unsure columns come first, for a person to confirm or correct. */
 export function ColumnsStep({ api }: ColumnsStepProps) {
   const { draft, decide } = api
   const { data, isLoading, errorMessage } = useApiQuery(getColumnsOptions({ path: { dataset_id: draft.dataset!.id } }))
+  const { data: rules } = useApiQuery(getTechniqueRulesOptions())
   if (isLoading) {
     return (
       <Stack gap="4" aria-busy="true">
@@ -28,6 +36,10 @@ export function ColumnsStep({ api }: ColumnsStepProps) {
   if (errorMessage) return <StatusAlert message={errorMessage} />
   const columns = [...(data ?? [])].sort(unsureFirst)
   const unsure = columns.filter((column) => column.needs_review && !draft.decisions[column.key]).length
+  const techniques = columns.map((column) => {
+    const decision = draft.decisions[column.key]
+    return techniqueFor(rules, decision?.role ?? column.role, decision?.subtype ?? column.subtype)
+  })
   return (
     <Stack gap="5">
       <Stack gap="2.5" borderWidth="1px" borderColor="border" bg="bg.panel" rounded="l3" p="4">
@@ -42,6 +54,21 @@ export function ColumnsStep({ api }: ColumnsStepProps) {
             </HStack>
           ))}
         </HStack>
+        {rules && (
+          <>
+            <Text textStyle="sm" color="fg.muted" pt="2">
+              From the engine's rules, the technique each would get if the recipient's questions need it. The rest are removed.
+            </Text>
+            <HStack gap="2" flexWrap="wrap">
+              {techniqueCounts(techniques).map(({ technique, count }) => (
+                <HStack key={technique} gap="1.5">
+                  <Text fontWeight="semibold" fontVariantNumeric="tabular-nums" textStyle="sm">{count}</Text>
+                  <TechniqueChip technique={technique} />
+                </HStack>
+              ))}
+            </HStack>
+          </>
+        )}
       </Stack>
       {unsure > 0 ? (
         <StatusAlert status="warning" title={`${unsure} unsure ${unsure === 1 ? 'column' : 'columns'}`}
@@ -57,13 +84,14 @@ export function ColumnsStep({ api }: ColumnsStepProps) {
               <Table.ColumnHeader>Column</Table.ColumnHeader>
               <Table.ColumnHeader>Detect found</Table.ColumnHeader>
               <Table.ColumnHeader>Your decision</Table.ColumnHeader>
+              <Table.ColumnHeader>Technique</Table.ColumnHeader>
               <Table.ColumnHeader>Status</Table.ColumnHeader>
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {columns.map((column) => (
-              <ColumnRow key={column.key} column={column} decision={draft.decisions[column.key]}
-                onDecide={(role, subtype) => decide(column, role, subtype)} />
+            {columns.map((column, index) => (
+              <ColumnRow key={column.key} column={column} decision={draft.decisions[column.key]} technique={techniques[index]}
+                pickDelayMs={PICK_START_MS + index * PICK_STEP_MS} onDecide={(role, subtype) => decide(column, role, subtype)} />
             ))}
           </Table.Body>
         </Table.Root>

@@ -4,15 +4,20 @@ import type { ColumnOut, ReviewDecisionIn } from '@/api/generated'
 import { ROLE_OPTIONS } from '../utils/role-words'
 import { SUBTYPES } from '../utils/subtype-options'
 import { RoleBadge } from './role-badge'
+import { TechniquePick } from './technique-pick'
 
 interface ColumnRowProps {
   column: ColumnOut
   decision: ReviewDecisionIn | undefined
   onDecide: (role: string, subtype: string) => void
+  /** The technique the engine's rules give this column's role and type, if a question needs it. */
+  technique: string | undefined
+  /** When this row's technique lands, so the rows pick one after another. */
+  pickDelayMs: number
 }
 
-/** One column: what Detect found, how sure it is and why, and the person's correction or confirmation. */
-export function ColumnRow({ column, decision, onDecide }: ColumnRowProps) {
+/** One column: what Detect found, how sure it is and why, the person's correction, and the technique that follows from it. */
+export function ColumnRow({ column, decision, onDecide, technique, pickDelayMs }: ColumnRowProps) {
   const role = decision?.role ?? column.role
   const subtype = decision?.subtype ?? column.subtype
   const unsure = column.needs_review && !decision
@@ -37,7 +42,7 @@ export function ColumnRow({ column, decision, onDecide }: ColumnRowProps) {
           <Text textStyle="xs" color="fg.muted">{column.reasons.join('. ')}</Text>
         </Stack>
       </Table.Cell>
-      <Table.Cell minW="80">
+      <Table.Cell minW="72">
         <HStack gap="2" flexWrap="wrap">
           <NativeSelect.Root size="xs" width="auto">
             <NativeSelect.Field value={role} aria-label={`What ${column.key} is`} onChange={(e) => onDecide(e.currentTarget.value, subtype)}>
@@ -52,6 +57,9 @@ export function ColumnRow({ column, decision, onDecide }: ColumnRowProps) {
             <NativeSelect.Indicator />
           </NativeSelect.Root>
         </HStack>
+      </Table.Cell>
+      <Table.Cell whiteSpace="nowrap">
+        <TechniquePick technique={technique} delayMs={pickDelayMs} />
       </Table.Cell>
       <Table.Cell whiteSpace="nowrap">
         {decision ? <Badge colorPalette="green" variant="subtle"><Check size={12} aria-hidden="true" />Decided</Badge>
