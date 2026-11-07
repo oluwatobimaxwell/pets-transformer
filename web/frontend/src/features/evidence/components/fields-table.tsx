@@ -1,4 +1,4 @@
-import { Badge, HStack, Stack, Table, Text } from '@chakra-ui/react'
+import { Badge, Box, HStack, Stack, Table, Text } from '@chakra-ui/react'
 import type { FieldEvidenceOut } from '@/api/generated'
 import { RoleBadge, TechniqueChip } from '@/features/release'
 
@@ -12,7 +12,7 @@ export function FieldsTable({ fields }: { fields: FieldEvidenceOut[] }) {
             <Table.ColumnHeader ps="5">Column</Table.ColumnHeader>
             <Table.ColumnHeader>Detected as</Table.ColumnHeader>
             <Table.ColumnHeader>Technique</Table.ColumnHeader>
-            <Table.ColumnHeader minW="56" maxW="md">Why</Table.ColumnHeader>
+            <Table.ColumnHeader>Why</Table.ColumnHeader>
             <Table.ColumnHeader pe="5" minW="40">Needed by</Table.ColumnHeader>
           </Table.Row>
         </Table.Header>
@@ -40,7 +40,7 @@ export function FieldsTable({ fields }: { fields: FieldEvidenceOut[] }) {
                   </Stack>
                 </Table.Cell>
                 <Table.Cell><TechniqueChip technique={field.pet} /></Table.Cell>
-                <Table.Cell textStyle="sm" color="fg.muted" maxW="md">{field.why}</Table.Cell>
+                <Table.Cell textStyle="sm" color="fg.muted"><Box minW="56" maxW="md" whiteSpace="normal">{field.why}</Box></Table.Cell>
                 <Table.Cell pe="5">
                   {neededBy.length ? (
                     <HStack gap="1" flexWrap="wrap">{neededBy.map((task) => <Badge key={task} variant="outline" colorPalette="gray" fontFamily="mono" size="sm">{task}</Badge>)}</HStack>

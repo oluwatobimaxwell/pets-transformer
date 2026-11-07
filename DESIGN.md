@@ -28,12 +28,14 @@ studio (github.com/Abdul1452/veilgate-source), adapted to this engine's own step
 | `/release/recipient` | Step 2, recipient |
 | `/release/columns` | Step 3, Detect's columns |
 | `/release/run` | Step 4, last look and run |
+| `/release/running/:runId` | The gate at work: the live before-and-after table and the stages, then the verdict and a way into the run |
 | `/runs` | Every run on this machine |
 | `/runs/:runId` | One run, which is its dashboard: who it's for, the verdict and headline numbers, then the evidence in tabs (`?tab=`) |
 
 A step page opens only once the steps before it are answered; otherwise it redirects to the first open one. The draft
 (choices and column names, never data values) lives in the studio layout, so moving between step pages keeps it, and in
-session storage, so a refresh keeps it too. It is cleared when a run starts.
+session storage, so a refresh keeps it too. It is kept while the gate runs, so the side panel still shows the answers, and
+cleared by Start over or Start a new release.
 
 ## The studio shell
 
@@ -139,6 +141,8 @@ bottom edge (`shadows.key`). Spacing follows Chakra's 4px scale, with more air b
 | Meters | Fill once |
 | Verdict | The status mark pops in; a release gets the "Sealed" stamp |
 | Working | A flipping 3D cube beside the word "Working" |
+| Technique pick | In step 3 and the live table, a shimmer gives way to each column's technique, one row after another; a changed role picks again |
+| Live table | While the gate tunes, a scan crosses the original rows. Once the protected rows are written, each value lifts away and its protected value rises in on a flash of the technique's colour, column by column, and each column's bar fills. Replay plays it again |
 | Landing demo | Four made-up visits go through the gate: Detect's scan tints each column by role, an attacker rings the clues that single one visit out, protection rewrites the cells column by column, and the release counts up its scores under a "Released" stamp. A thin line shows time to the next stage; hovering or focusing pauses it |
 | Landing pipeline | A pulse travels along the six connected stages |
 

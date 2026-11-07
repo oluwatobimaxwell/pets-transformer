@@ -4,7 +4,9 @@ A local web app around the engine: upload data or pick a challenge sample, descr
 release gate, and download the protected data and its evidence.
 
 It runs on your own machine and has no sign-in, so never expose it to a network. Uploaded data, keys and row maps stay in
-`../workspace/`, which git ignores, and the API only ever serves the protected release, the evidence and the dashboard.
+`../workspace/`, which git ignores, and the API only ever serves the protected release and its evidence. The one exception
+is the challenge's synthetic sample data, which describes fictional people: the running screen shows a few of its original
+rows beside their protected versions. Original values of uploaded data are never served.
 
 ## With Docker
 
