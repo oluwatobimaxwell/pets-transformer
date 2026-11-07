@@ -26,7 +26,7 @@ _ICD10 = re.compile(r"^[A-TV-Z]\d{2}(?:\.\d{1,2})?$")
 _DECIMAL_COMMA = re.compile(r"^-?\d[\d ]*,\d+$")
 _MONEY = re.compile(r"^-?\d{1,3}(?: \d{3})+,\d{2}$")
 _USER_AGENT = re.compile(r"^(?:Mozilla|curl|python-requests|Outlook|okhttp)/?", re.I)
-_HOSTNAME = re.compile(r"^(?:[A-Z]{2,5}-[A-Z0-9-]{3,}|[a-z0-9-]+(?:\.[a-z0-9-]+)+)$")
+_HOSTNAME = re.compile(r"^(?:[A-Z]{2,5}-[A-Z0-9-]{3,}|(?=[^.]*[a-z])[a-z0-9-]+(?:\.[a-z0-9-]+)+)$")  # needs a letter, so 49.85 isn't a host
 _CODE_ID = re.compile(r"^[A-Za-z]{1,6}[-_]?\d{3,}$")
 _FILE_PATH = re.compile(r"^(?:[A-Za-z]:\\|/[\w.-]+/)")
 

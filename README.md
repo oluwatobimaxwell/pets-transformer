@@ -53,6 +53,12 @@ For your own data, write a scenario file with the recipient, trust level, look-a
 
 See [engine/README.md](engine/README.md) for every command, the scenario format, the review flow and the output folders.
 
+## Web app
+
+The same engine behind a local web app: upload data or pick a sample, describe the recipient and their questions, confirm the columns
+Detect was unsure about, run the gate, and download the protected data and evidence. Setup and run steps are in
+[web/README.md](web/README.md). Run from the web app and from the command line, `HEALTH-S1` gives identical results.
+
 ## How it works
 
 1. **Detect** labels every column from its values and name, and every piece of personal data in free text.
@@ -66,7 +72,8 @@ No large language model or outside service sees the data.
 
 ## Built with
 
-Python, pandas, NumPy, scikit-learn and PyYAML, with the challenge's `pets-eval` toolkit (MIT, © Since AI ry) for scoring.
+Engine: Python, pandas, NumPy, scikit-learn and PyYAML, with the challenge's `pets-eval` toolkit (MIT, © Since AI ry) for scoring.
+Web app: FastAPI, React, TypeScript, Chakra UI and TanStack Query, scaffolded with blacksmith-cli.
 The challenge data is CC BY 4.0, © Since AI ry, with postcode centroids from GeoNames (CC BY 4.0).
 
 ## AI tools
@@ -75,4 +82,6 @@ The team built this with Claude Code (Anthropic) as an AI coding assistant. The 
 
 ## What was built at the event
 
-Everything in this repository was written during Since AI Hackathon 2026, 6–8 November. It depends on the challenge's `pets-eval` toolkit, which isn't part of this repository.
+Everything in this repository was written during Since AI Hackathon 2026, 6–8 November, except the web app's skeleton. That was generated
+at the event with blacksmith-cli, a pre-existing open-source tool, then stripped and rebuilt (details in [web/README.md](web/README.md)).
+The engine depends on the challenge's `pets-eval` toolkit, which isn't part of this repository.

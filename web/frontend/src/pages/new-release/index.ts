@@ -1,0 +1,1 @@
+export { newReleaseRoutes } from './routes'

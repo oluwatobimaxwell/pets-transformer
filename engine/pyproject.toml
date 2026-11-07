@@ -7,7 +7,9 @@ name = "pets-engine"
 version = "0.1.0"
 description = "Privacy release gate: detect, select, tune, transform, verify and report."
 requires-python = ">=3.10"
-dependencies = ["numpy", "pandas>=2", "scipy", "scikit-learn", "joblib", "pyyaml"]
+# Pinned to the versions every result was measured with: newer pandas reads some dates differently and shifts which rows are suppressed,
+# and the saved detector needs the scikit-learn it was trained with.
+dependencies = ["numpy>=1.26,<2", "pandas>=2.2,<2.3", "scipy>=1.13,<1.14", "scikit-learn>=1.4.2,<1.5", "joblib", "pyyaml"]
 
 [project.optional-dependencies]
 dev = ["pytest"]

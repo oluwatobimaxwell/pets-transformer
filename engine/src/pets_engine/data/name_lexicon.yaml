@@ -45,6 +45,6 @@
 - {pattern: 'amount|original_amount', role: quasi_identifier, subtype: FINANCIAL_DATA}
 - {pattern: '_ts$|_utc$|^ts$|timestamp|_at$|^ts_', role: quasi_identifier, subtype: TIMESTAMP}
 - {pattern: 'date|_since$|_start$|expiry|^week$', role: quasi_identifier, subtype: DATE}
-- {pattern: 'note|comment|description|message|subject$|complaint|command_line|file_path|attachment|(^|_)url$|(^|_)text$', role: free_text, subtype: FREE_TEXT}
+- {pattern: '(^|_)notes?$|note_text|comment|description|message|subject$|complaint|command_line|file_path|attachment|(^|_)url$|(^|_)text$', role: free_text, subtype: FREE_TEXT}
 - {pattern: 'bytes|size_|count|_kb$|score|duration|handle_time|n_turns|capacity|distance|wind|oktas|temperature|rssi|seq$|confidence', role: non_sensitive, subtype: MEASUREMENT}
 - {pattern: 'status|method|type|channel|intent|severity|result|version|verdict|action|direction|priority|sentiment|category|consent|label|rule_name|technique|code$|split|period|term|unit|zone', role: non_sensitive, subtype: CATEGORY}

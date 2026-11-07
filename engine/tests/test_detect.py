@@ -31,3 +31,9 @@ def test_addresses_and_money_are_decided_by_their_values():
     money = profile_column("export", "c11", pd.Series(["3 987,96", "5 451,19"] * 20))
     assert strong_evidence(address)[1] == "STREET_ADDRESS"
     assert strong_evidence(money)[1] == "FINANCIAL_DATA"
+
+
+def test_decimal_amounts_are_not_hostnames_and_note_type_is_not_free_text():
+    assert not PATTERNS["hostname"]("49.85") and PATTERNS["hostname"]("mail.meridian.example")
+    assert name_hint("clinical_notes", "note_type") is None or name_hint("clinical_notes", "note_type").role != "free_text"
+    assert name_hint("conversations", "agent_note").role == "free_text"

@@ -8,3 +8,5 @@ pets_submission/
 *.joblib.tmp
 .DS_Store
 dist/
+workspace/
+node_modules/
