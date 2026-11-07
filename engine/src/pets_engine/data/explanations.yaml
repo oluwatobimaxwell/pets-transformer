@@ -10,7 +10,7 @@ headline:
   privacy: "1.00 means the public checks found no remaining risk. It is evidence, not a guarantee."
   utility: "The average score of the questions this recipient must still be able to answer."
   composite: "A combined score that is only high when both privacy and usefulness are high."
-  rows: "Rows that stand out are removed. Linked rows in other tables go with them."
+  rows: "Rows that stand out lose one clue value at a time. A row is removed, with its linked rows, only if that isn't enough."
   budget: "The differential privacy budget this release spends. Smaller is more private."
   answered: "Public releases get noisy answers to their question list instead of rows."
 

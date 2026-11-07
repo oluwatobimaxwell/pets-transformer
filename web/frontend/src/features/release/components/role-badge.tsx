@@ -3,5 +3,11 @@ import { roleWord } from '../utils/role-words'
 
 export function RoleBadge({ role }: { role: string }) {
   const word = roleWord(role)
-  return <Badge colorPalette={word.palette} variant="subtle">{word.label}</Badge>
+  const RoleIcon = word.icon
+  return (
+    <Badge colorPalette={word.palette} variant="subtle">
+      <RoleIcon size={12} aria-hidden="true" />
+      {word.label}
+    </Badge>
+  )
 }

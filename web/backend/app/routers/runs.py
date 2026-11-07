@@ -25,7 +25,8 @@ def get_run(run_id: str):
 
 @router.get("/{run_id}/dashboard/", response_class=FileResponse)
 def get_dashboard(run_id: str):
-    return FileResponse(downloads.dashboard(runs.get(run_id).folder), media_type="text/html")
+    # Evidence can be regenerated, so the browser must check for a newer page instead of reusing a stored one.
+    return FileResponse(downloads.dashboard(runs.get(run_id).folder), media_type="text/html", headers={"Cache-Control": "no-cache"})
 
 
 @router.get("/{run_id}/download/{part}/", response_class=FileResponse)

@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="14 14 72 72">
-  <style>
-    path { fill: #0D0D0D; }
-    @media (prefers-color-scheme: dark) { path { fill: #FAFAF8; } }
-  </style>
-  <path d="M20 14 H80 Q86 14 86 20 V80 Q86 86 80 86 H20 Q14 86 14 80 V20 Q14 14 20 14 Z M50 32 L72 54 L72 68 L58 68 L36 46 L36 32 Z" fill-rule="evenodd"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="7" fill="#2c4aa8"/>
+  <g transform="translate(4 4)" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>
+    <path d="m9 12 2 2 4-4"/>
+  </g>
 </svg>

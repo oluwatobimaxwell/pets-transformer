@@ -5,6 +5,8 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+from ..utils.explanations import score_band
+
 
 TOP_RISKS = 5
 NOTABLE_RISK = 0.1
@@ -46,7 +48,7 @@ def build_manifest(config, labels: list, plan: list, tuned, verdicts: list, repo
         "scores": _scores(report, results),
         "top_risks": top_risks(report),
         "stronger_attacker": attack,
-        "tasks": results,
+        "tasks": [{**task, "band": {key: score_band(task["score"])[key] for key in ("word", "tone")}} for task in results],
         "answers": answers,
         "recoding": recoding or {},
     }

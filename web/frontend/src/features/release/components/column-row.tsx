@@ -1,4 +1,5 @@
-import { Badge, Button, HStack, NativeSelect, Table, Text } from '@chakra-ui/react'
+import { Badge, Button, HStack, NativeSelect, Progress, Stack, Table, Text } from '@chakra-ui/react'
+import { Check, TriangleAlert } from 'lucide-react'
 import type { ColumnOut, ReviewDecisionIn } from '@/api/generated'
 import { ROLE_OPTIONS } from '../utils/role-words'
 import { SUBTYPES } from '../utils/subtype-options'
@@ -10,25 +11,33 @@ interface ColumnRowProps {
   onDecide: (role: string, subtype: string) => void
 }
 
-/** One column: what Detect found, why, and the person's correction or confirmation. */
+/** One column: what Detect found, how sure it is and why, and the person's correction or confirmation. */
 export function ColumnRow({ column, decision, onDecide }: ColumnRowProps) {
   const role = decision?.role ?? column.role
   const subtype = decision?.subtype ?? column.subtype
   const unsure = column.needs_review && !decision
+  const sure = Math.round(column.confidence * 100)
   return (
     <Table.Row bg={unsure ? 'orange.subtle' : undefined}>
-      <Table.Cell fontFamily="mono" whiteSpace="nowrap">{column.key}</Table.Cell>
-      <Table.Cell>
-        <HStack gap="2" flexWrap="wrap">
-          <RoleBadge role={column.role} />
-          <Text textStyle="xs" color="fg.muted">{Math.round(column.confidence * 100)}% sure</Text>
-          {column.needs_review && column.best_guess_role && (
-            <Text textStyle="xs" color="fg.muted">best guess: {column.best_guess_role.replace(/_/g, ' ')}</Text>
-          )}
-        </HStack>
-        <Text textStyle="xs" color="fg.muted" mt="1">{column.reasons.join('. ')}</Text>
+      <Table.Cell fontFamily="mono" whiteSpace="nowrap" fontWeight="medium">{column.key}</Table.Cell>
+      <Table.Cell minW="64">
+        <Stack gap="1.5">
+          <HStack gap="2" flexWrap="wrap">
+            <RoleBadge role={column.role} />
+            <HStack gap="1.5" title={`Detect is ${sure}% sure`}>
+              <Progress.Root value={sure} size="xs" w="12" colorPalette={unsure ? 'orange' : 'brand'} aria-label={`Detect is ${sure}% sure`}>
+                <Progress.Track><Progress.Range /></Progress.Track>
+              </Progress.Root>
+              <Text textStyle="xs" color="fg.muted" fontVariantNumeric="tabular-nums">{sure}% sure</Text>
+            </HStack>
+            {column.needs_review && column.best_guess_role && (
+              <Text textStyle="xs" color="fg.muted">best guess: {column.best_guess_role.replace(/_/g, ' ')}</Text>
+            )}
+          </HStack>
+          <Text textStyle="xs" color="fg.muted">{column.reasons.join('. ')}</Text>
+        </Stack>
       </Table.Cell>
-      <Table.Cell>
+      <Table.Cell minW="80">
         <HStack gap="2" flexWrap="wrap">
           <NativeSelect.Root size="xs" width="auto">
             <NativeSelect.Field value={role} aria-label={`What ${column.key} is`} onChange={(e) => onDecide(e.currentTarget.value, subtype)}>
@@ -44,9 +53,14 @@ export function ColumnRow({ column, decision, onDecide }: ColumnRowProps) {
           </NativeSelect.Root>
         </HStack>
       </Table.Cell>
-      <Table.Cell>
-        {decision ? <Badge colorPalette="green">Decided</Badge>
-          : unsure ? <Button size="xs" variant="outline" onClick={() => onDecide(role, subtype)}>Confirm</Button>
+      <Table.Cell whiteSpace="nowrap">
+        {decision ? <Badge colorPalette="green" variant="subtle"><Check size={12} aria-hidden="true" />Decided</Badge>
+          : unsure ? (
+            <Stack gap="1.5" align="start">
+              <HStack gap="1" color="orange.fg" textStyle="xs" fontWeight="medium"><TriangleAlert size={12} aria-hidden="true" />Unsure</HStack>
+              <Button size="xs" variant="outline" onClick={() => onDecide(role, subtype)}><Check aria-hidden="true" />Confirm</Button>
+            </Stack>
+          )
           : <Text textStyle="xs" color="fg.muted">Detected</Text>}
       </Table.Cell>
     </Table.Row>

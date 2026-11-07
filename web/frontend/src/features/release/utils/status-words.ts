@@ -1,13 +1,15 @@
-/** What each run status means, and its colour. */
-const STATUS_WORDS: Record<string, { label: string; palette: string; finished: boolean }> = {
-  queued: { label: 'Waiting', palette: 'gray', finished: false },
-  running: { label: 'Running', palette: 'blue', finished: false },
-  release: { label: 'Released', palette: 'green', finished: true },
-  review: { label: "Held for a person's review", palette: 'orange', finished: true },
-  block: { label: 'Blocked', palette: 'red', finished: true },
-  error: { label: 'Failed', palette: 'red', finished: true },
+import { CircleAlert, CircleCheck, CircleX, Clock, LoaderCircle, OctagonX, type LucideIcon } from 'lucide-react'
+
+/** What each run status means, its colour and its icon. */
+const STATUS_WORDS: Record<string, { label: string; palette: string; finished: boolean; icon: LucideIcon }> = {
+  queued: { label: 'Waiting', palette: 'gray', finished: false, icon: Clock },
+  running: { label: 'Running', palette: 'blue', finished: false, icon: LoaderCircle },
+  release: { label: 'Released', palette: 'green', finished: true, icon: CircleCheck },
+  review: { label: "Held for a person's review", palette: 'orange', finished: true, icon: CircleAlert },
+  block: { label: 'Blocked', palette: 'red', finished: true, icon: OctagonX },
+  error: { label: 'Failed', palette: 'red', finished: true, icon: CircleX },
 }
 
 export function statusWord(status: string) {
-  return STATUS_WORDS[status] ?? { label: status, palette: 'gray', finished: true }
+  return STATUS_WORDS[status] ?? { label: status, palette: 'gray', finished: true, icon: Clock }
 }

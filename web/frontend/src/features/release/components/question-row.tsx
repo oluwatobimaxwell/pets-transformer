@@ -1,4 +1,5 @@
-import { Button, HStack, Input, NativeSelect, Stack, Text } from '@chakra-ui/react'
+import { Badge, Button, HStack, Input, NativeSelect, Stack, Text } from '@chakra-ui/react'
+import { Trash2 } from 'lucide-react'
 import type { QuestionIn } from '@/api/generated'
 import type { QuestionKind } from '../types'
 import { emptyQuestion } from '../utils/empty-question'
@@ -20,12 +21,15 @@ export function QuestionRow({ number, question, options, onChange, onRemove }: Q
   const columns = question.columns ?? []
   const by = question.by ?? []
   return (
-    <Stack gap="2" borderWidth="1px" borderColor="border.muted" rounded="l2" p="3">
-      <HStack gap="2" flexWrap="wrap">
-        <Text fontWeight="semibold" minW="6">Q{number}</Text>
-        <Input size="sm" flex="1" minW="56" placeholder="The question in plain words" value={question.ask ?? ''}
-          onChange={(event) => onChange({ ...question, ask: event.currentTarget.value })} />
-        <Button size="sm" variant="ghost" onClick={onRemove}>Remove</Button>
+    <Stack gap="3" borderWidth="1px" borderColor="border" bg="bg.panel" rounded="l3" p="4" animation="rise 180ms var(--chakra-easings-out)">
+      <HStack gap="3" flexWrap="wrap">
+        <Badge variant="subtle" colorPalette="brand" fontFamily="mono" size="lg">Q{number}</Badge>
+        <Input size="sm" flex="1" minW="56" placeholder="The question in plain words" aria-label={`Question ${number} in plain words`}
+          value={question.ask ?? ''} onChange={(event) => onChange({ ...question, ask: event.currentTarget.value })} />
+        <Button size="sm" variant="ghost" onClick={onRemove} aria-label={`Remove question ${number}`}>
+          <Trash2 aria-hidden="true" />
+          <Text as="span" hideBelow="sm">Remove</Text>
+        </Button>
       </HStack>
       <HStack gap="2" flexWrap="wrap">
         <NativeSelect.Root size="sm" width="auto">

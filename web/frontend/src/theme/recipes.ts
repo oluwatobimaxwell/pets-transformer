@@ -1,38 +1,37 @@
 import { defineRecipe } from '@chakra-ui/react'
 
 /**
- * Recipe overrides. These are merged into Chakra's defaults, so only the
- * properties that change the look are listed here.
+ * Recipe overrides, merged into Chakra's defaults: only what changes the look is listed.
+ * Every control shares one radius, one weight and one transition, so buttons, inputs and selects read as one family.
  */
 export const recipes = {
   button: defineRecipe({
     base: {
       borderRadius: 'control',
       fontWeight: 'medium',
-      letterSpacing: '-0.005em',
-      transitionDuration: 'fast',
+      transitionProperty: 'background, border-color, color, box-shadow, transform',
+      transitionDuration: 'state',
+      transitionTimingFunction: 'out',
+      _active: { transform: 'translateY(1px)' },
     },
     variants: {
       variant: {
         outline: {
+          bg: 'bg.panel',
           borderColor: 'border.emphasized',
           color: 'fg',
-          _hover: { bg: 'bg.muted' },
+          _hover: { bg: 'bg.subtle', borderColor: 'fg.subtle' },
         },
         ghost: {
-          color: 'fg',
-          _hover: { bg: 'bg.muted' },
+          color: 'fg.muted',
+          _hover: { bg: 'bg.muted', color: 'fg' },
         },
       },
     },
   }),
   input: defineRecipe({
-    base: { borderRadius: 'control' },
+    base: { borderRadius: 'control', bg: 'bg.panel' },
     variants: {
-      size: {
-        md: { px: '4', '--input-height': 'sizes.11' },
-        lg: { px: '5', '--input-height': 'sizes.12' },
-      },
       variant: {
         outline: {
           borderColor: 'border.emphasized',
@@ -42,7 +41,7 @@ export const recipes = {
     },
   }),
   textarea: defineRecipe({
-    base: { borderRadius: 'l3', px: '4', py: '3' },
+    base: { borderRadius: 'control', bg: 'bg.panel', px: '3', py: '2' },
     variants: {
       variant: {
         outline: {
@@ -53,10 +52,10 @@ export const recipes = {
     },
   }),
   heading: defineRecipe({
-    base: { letterSpacing: 'tight' },
+    base: { letterSpacing: '-0.01em', fontWeight: 'semibold' },
   }),
   badge: defineRecipe({
-    base: { borderRadius: 'control', fontWeight: 'medium' },
+    base: { borderRadius: 'full', fontWeight: 'medium', gap: '1' },
   }),
   code: defineRecipe({
     base: { fontFamily: 'mono' },
