@@ -13,7 +13,7 @@ interface RunStepProps {
 /** A last look before the gate runs. */
 export function RunStep({ api }: RunStepProps) {
   const { draft } = api
-  const { start, isStarting, errorMessage } = useStartRun()
+  const { start, isStarting, errorMessage } = useStartRun(api.reset)
   const custom = draft.custom
   const trust = TRUST_OPTIONS.find((option) => option.value === custom.trust_level)?.label
   const items = draft.scenarioId
@@ -53,7 +53,7 @@ export function RunStep({ api }: RunStepProps) {
             The gate detects, selects, tunes, transforms and verifies, then releases, holds for review or blocks. Nothing is released unless every check passes.
           </Text>
           <HStack>
-            <Button size="lg" onClick={() => start(draft)} loading={isStarting} loadingText="Starting">
+            <Button size="lg" colorPalette="accent" onClick={() => start(draft)} loading={isStarting} loadingText="Starting">
               <ShieldCheck aria-hidden="true" />
               Run the release gate
             </Button>
