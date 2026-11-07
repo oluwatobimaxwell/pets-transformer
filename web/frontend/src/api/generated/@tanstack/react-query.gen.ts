@@ -3,8 +3,8 @@
 import { type DefaultError, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { download, getColumns, getDashboard, getDataset, getRun, listRuns, listSamples, listScenarios, type Options, registerSample, startRun, uploadDataset } from '../sdk.gen';
-import type { DownloadData, GetColumnsData, GetColumnsResponse, GetDashboardData, GetDatasetData, GetDatasetResponse, GetRunData, GetRunResponse, ListRunsData, ListRunsResponse, ListSamplesData, ListSamplesResponse, ListScenariosData, ListScenariosResponse, RegisterSampleData, RegisterSampleResponse, StartRunData, StartRunResponse, UploadDatasetData, UploadDatasetResponse } from '../types.gen';
+import { download, getColumns, getDataset, getEvidence, getPreview, getRecords, getRun, getTechniqueRules, listRuns, listSamples, listScenarios, type Options, registerSample, startRun, uploadDataset } from '../sdk.gen';
+import type { DownloadData, GetColumnsData, GetColumnsResponse, GetDatasetData, GetDatasetResponse, GetEvidenceData, GetEvidenceResponse, GetPreviewData, GetPreviewResponse, GetRecordsData, GetRecordsResponse, GetRunData, GetRunResponse, GetTechniqueRulesData, GetTechniqueRulesResponse, ListRunsData, ListRunsResponse, ListSamplesData, ListSamplesResponse, ListScenariosData, ListScenariosResponse, RegisterSampleData, RegisterSampleResponse, StartRunData, StartRunResponse, UploadDatasetData, UploadDatasetResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -198,14 +198,14 @@ export const getRunOptions = (options: Options<GetRunData>) => queryOptions<GetR
     queryKey: getRunQueryKey(options)
 });
 
-export const getDashboardQueryKey = (options: Options<GetDashboardData>) => createQueryKey('getDashboard', options);
+export const getEvidenceQueryKey = (options: Options<GetEvidenceData>) => createQueryKey('getEvidence', options);
 
 /**
- * Get Dashboard
+ * Get Evidence
  */
-export const getDashboardOptions = (options: Options<GetDashboardData>) => queryOptions<unknown, DefaultError, unknown, ReturnType<typeof getDashboardQueryKey>>({
+export const getEvidenceOptions = (options: Options<GetEvidenceData>) => queryOptions<GetEvidenceResponse, DefaultError, GetEvidenceResponse, ReturnType<typeof getEvidenceQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await getDashboard({
+        const { data } = await getEvidence({
             ...options,
             ...queryKey[0],
             signal,
@@ -213,7 +213,25 @@ export const getDashboardOptions = (options: Options<GetDashboardData>) => query
         });
         return data;
     },
-    queryKey: getDashboardQueryKey(options)
+    queryKey: getEvidenceQueryKey(options)
+});
+
+export const getRecordsQueryKey = (options: Options<GetRecordsData>) => createQueryKey('getRecords', options);
+
+/**
+ * Get Records
+ */
+export const getRecordsOptions = (options: Options<GetRecordsData>) => queryOptions<GetRecordsResponse, DefaultError, GetRecordsResponse, ReturnType<typeof getRecordsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getRecords({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getRecordsQueryKey(options)
 });
 
 export const downloadQueryKey = (options: Options<DownloadData>) => createQueryKey('download', options);
@@ -232,4 +250,40 @@ export const downloadOptions = (options: Options<DownloadData>) => queryOptions<
         return data;
     },
     queryKey: downloadQueryKey(options)
+});
+
+export const getPreviewQueryKey = (options: Options<GetPreviewData>) => createQueryKey('getPreview', options);
+
+/**
+ * Get Preview
+ */
+export const getPreviewOptions = (options: Options<GetPreviewData>) => queryOptions<GetPreviewResponse, DefaultError, GetPreviewResponse, ReturnType<typeof getPreviewQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getPreview({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getPreviewQueryKey(options)
+});
+
+export const getTechniqueRulesQueryKey = (options?: Options<GetTechniqueRulesData>) => createQueryKey('getTechniqueRules', options);
+
+/**
+ * Get Technique Rules
+ */
+export const getTechniqueRulesOptions = (options?: Options<GetTechniqueRulesData>) => queryOptions<GetTechniqueRulesResponse, DefaultError, GetTechniqueRulesResponse, ReturnType<typeof getTechniqueRulesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getTechniqueRules({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getTechniqueRulesQueryKey(options)
 });

@@ -1,26 +1,34 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Grid, Heading, HStack, Stack, Text } from '@chakra-ui/react'
+import { HStack, Stack } from '@chakra-ui/react'
 import type { DatasetOut } from '@/api/generated'
 import { listSamplesOptions } from '@/api/generated/@tanstack/react-query.gen'
 import { CubeSpinner } from '@/shared/components/motion/cube-spinner'
 import { StatusAlert } from '@/shared/components/status-alert'
 import { useApiQuery } from '@/shared/hooks/use-api-query'
 import { useRegisterData } from '../hooks/use-register-data'
-import { SampleList } from './sample-list'
+import { DATA_SOURCES, type DataSource } from '../utils/data-sources'
+import { ChoiceCards } from './choice-cards'
+import { SampleTable } from './sample-table'
 import { UploadBox } from './upload-box'
 
 interface DataStepProps {
   onRegistered: (dataset: DatasetOut) => void
+  /** The dataset the release already uses, marked in the list. */
+  chosen?: string
 }
 
-/** Upload CSV files or pick a challenge dataset. `?sample=health` (from the landing page) picks that sample straight away. */
-export function DataStep({ onRegistered }: DataStepProps) {
+/**
+ * Choose where the data comes from, then pick a challenge dataset or upload CSV files.
+ * `?sample=health` (from the landing page) picks that sample straight away.
+ */
+export function DataStep({ onRegistered, chosen }: DataStepProps) {
   const { uploadFiles, chooseSample, isBusy, errorMessage } = useRegisterData(onRegistered)
   const [params, setParams] = useSearchParams()
   const wanted = params.get('sample')
   const { data: samples } = useApiQuery(listSamplesOptions())
   const autoloaded = useRef(false)
+  const [source, setSource] = useState<DataSource>('sample')
 
   useEffect(() => {
     if (!wanted || !samples || autoloaded.current) return
@@ -39,19 +47,12 @@ export function DataStep({ onRegistered }: DataStepProps) {
           Registering the data and reading its tables…
         </HStack>
       )}
-      <Grid templateColumns={{ base: '1fr', lg: 'minmax(0, 5fr) minmax(0, 8fr)' }} gap={{ base: '8', lg: '6' }} alignItems="start">
-        <Stack gap="3">
-          <Heading as="h2" textStyle="md">Upload your data</Heading>
-          <UploadBox onUpload={uploadFiles} disabled={isBusy} />
-        </Stack>
-        <Stack gap="3">
-          <Stack gap="0.5">
-            <Heading as="h2" textStyle="md">Or use a challenge dataset</Heading>
-            <Text textStyle="sm" color="fg.muted">Synthetic data from the challenge package, ready to protect.</Text>
-          </Stack>
-          <SampleList onChoose={chooseSample} disabled={isBusy} />
-        </Stack>
-      </Grid>
+      <ChoiceCards options={DATA_SOURCES} value={source} onChange={setSource} label="Where the data comes from" />
+      <div key={source} className="stagger">
+        {source === 'sample'
+          ? <SampleTable onChoose={chooseSample} disabled={isBusy} chosen={chosen} onUploadInstead={() => setSource('upload')} />
+          : <UploadBox onUpload={uploadFiles} disabled={isBusy} />}
+      </div>
     </Stack>
   )
 }

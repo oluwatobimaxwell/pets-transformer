@@ -5,14 +5,13 @@ import { buildPath, Path } from '@/router/paths'
 import type { ReleaseDraft } from '../types'
 import { filledQuestion } from '../utils/empty-question'
 
-/** Sends the draft to the release gate, then opens the run's page. `onStarted` clears the draft for the next release. */
-export function useStartRun(onStarted?: () => void) {
+/** Sends the draft to the release gate, then shows it working. The draft stays, so the wizard's side still shows what is being released. */
+export function useStartRun() {
   const navigate = useNavigate()
   const mutation = useApiMutation({
     ...startRunMutation(),
     onSuccess: (run) => {
-      navigate(buildPath(Path.Run, { runId: run.id }))
-      onStarted?.()
+      navigate(buildPath(Path.ReleaseRunning, { runId: run.id }))
     },
   })
   const start = (draft: ReleaseDraft) => {

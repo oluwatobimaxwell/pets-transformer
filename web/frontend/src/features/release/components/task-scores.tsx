@@ -10,11 +10,11 @@ interface TaskScore {
   band?: { word: string; tone: string }
 }
 
-/** Each required question and how well the protected data still answers it, as a number, a word and a bar. */
+/** Each required question and how well the protected data still answers it, as a number, a word and a bar. It sits inside a card. */
 export function TaskScores({ tasks }: { tasks: TaskScore[] }) {
   if (!tasks.length) return null
   return (
-    <Stack as="ul" gap="0" listStyleType="none" borderWidth="1px" borderColor="border" bg="bg.panel" rounded="l3" divideY="1px" divideColor="border.muted">
+    <Stack as="ul" gap="0" listStyleType="none" divideY="1px" divideColor="border.muted">
       {tasks.map((task) => {
         const word = task.band?.word ?? ''
         return (
@@ -26,7 +26,7 @@ export function TaskScores({ tasks }: { tasks: TaskScore[] }) {
               </HStack>
               <HStack gap="2" flexShrink="0">
                 {word && <Badge variant="subtle" hideBelow="sm">{word}</Badge>}
-                <Text fontWeight="semibold" fontFamily="mono" fontVariantNumeric="tabular-nums">{task.score === null ? "can't answer" : formatScore(task.score)}</Text>
+                <Text fontWeight="semibold" fontFamily="mono" fontVariantNumeric="tabular-nums">{task.score === null && !word ? "can't answer" : formatScore(task.score)}</Text>
               </HStack>
             </HStack>
             <Box h="1.5" rounded="full" bg="bg.muted" overflow="hidden" role="img" aria-label={`${task.id} scores ${formatScore(task.score)} of 1${word ? `, ${word}` : ''}`}>

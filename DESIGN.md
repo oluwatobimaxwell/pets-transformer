@@ -23,13 +23,13 @@ studio (github.com/Abdul1452/veilgate-source), adapted to this engine's own step
 
 | Path | Page |
 |---|---|
-| `/` | Landing: hero with a live 3D demo, results against the challenge baseline, how it works, results per recipient, risks that remain |
+| `/` | Landing: hero with a live release-gate demo, usefulness against the challenge baseline, how it works, results per recipient, risks that remain |
 | `/release/data` | Step 1, data. `?sample=health` registers that sample straight away (the landing page's main button) |
 | `/release/recipient` | Step 2, recipient |
 | `/release/columns` | Step 3, Detect's columns |
 | `/release/run` | Step 4, last look and run |
 | `/runs` | Every run on this machine |
-| `/runs/:runId` | One run: verdict, scores, downloads, evidence dashboard, timeline |
+| `/runs/:runId` | One run, which is its dashboard: who it's for, the verdict and headline numbers, then the evidence in tabs (`?tab=`) |
 
 A step page opens only once the steps before it are answered; otherwise it redirects to the first open one. The draft
 (choices and column names, never data values) lives in the studio layout, so moving between step pages keeps it, and in
@@ -38,10 +38,41 @@ session storage, so a refresh keeps it too. It is cleared when a run starts.
 ## The studio shell
 
 A 300px rail, dark in both themes, beside the page: the brand, the 3D model of the data with a caption and legend, two
-live figures, the steps (done = forest tick, current = mandarin, not yet open = lock) and the run history. Below `lg`
+live figures, links to every run and a new release, and the latest runs (the one on screen marked, each with its status
+icon). On a run, a switch above the model shows the data **Original** (every source column, layered by role, identifiers
+in mandarin) or **Protected** (what the gate made of it, drawn in the scenario's look-alike group size); the model
+morphs between them and the caption, legend and figures follow. Below `lg`
 the rail gives way to a top bar and the horizontal stepper. The top bar carries the dataset and recipient, a busy pill,
 Start over, Data handling (a drawer), New release and the theme button. A boot screen (a scanning lattice cube) stays
 up until the API answers once per page load, and says how to start the backend if it can't connect.
+
+## The wizard panel
+
+The new-release wizard has no rail and no model: a 300px light panel (`bg.subtle`) beside the step, hidden below `lg`.
+It reads top to bottom as the release being built. Each step shows its answer under its name once it has one (the
+dataset and table count, the recipient, how many column decisions are the person's own), so there is no separate
+summary. The current step sits in a raised card with a mandarin marker; done steps are forest ticks and can be clicked
+to go back; steps not yet open say which step opens them. The foot is pinned: Start over, and the reminder that the
+data never leaves this machine.
+
+## The run page
+
+A run's page is its dashboard; nothing is embedded. Top to bottom:
+
+1. **Header.** Scenario id and trust level as tags, the recipient as the title, the purpose as the lead, the downloads
+   (protected data as the main action, the evidence package beside it), and one line of facts: run id, when it was
+   decided, how long it took, the look-alike bar, the engine.
+2. **Verdict.** The verdict banner, the attempt it came on and the combined score, and for a held or blocked run the
+   checks that stopped it. Under it, the headline numbers in one strip, each with a meter where it is a share and what
+   it means. The numbers appear once on the page.
+3. **Tabs**, sticky while the page scrolls, the open one in the address: Overview (the questions, the guarantee for a
+   public release, what remains, the gate at a glance, the timeline), Usefulness (each question with its score band,
+   what changed and both answers side by side), Privacy (the engine's stronger attacker, then the scorecard risks by
+   table), Columns (the settings Tune chose, then every column, filterable and searchable), Gate checks (every attempt,
+   the deciding one open, failures first) and Records (a sample of the released rows; a pseudonym finds its other rows).
+
+The page reads `/api/runs/:id/evidence/`, and each released table from `/api/runs/:id/records/:table/` only when it is
+opened. The self-contained `dashboard.html` still ships inside the evidence download, for readers without the app.
 
 ## The 3D model
 
@@ -108,6 +139,8 @@ bottom edge (`shadows.key`). Spacing follows Chakra's 4px scale, with more air b
 | Meters | Fill once |
 | Verdict | The status mark pops in; a release gets the "Sealed" stamp |
 | Working | A flipping 3D cube beside the word "Working" |
+| Landing demo | Four made-up visits go through the gate: Detect's scan tints each column by role, an attacker rings the clues that single one visit out, protection rewrites the cells column by column, and the release counts up its scores under a "Released" stamp. A thin line shows time to the next stage; hovering or focusing pauses it |
+| Landing pipeline | A pulse travels along the six connected stages |
 
 `prefers-reduced-motion` turns all of it off, including the model's spin and the landing demo's auto-advance.
 

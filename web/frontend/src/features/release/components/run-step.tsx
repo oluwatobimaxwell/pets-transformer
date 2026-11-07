@@ -13,7 +13,7 @@ interface RunStepProps {
 /** A last look before the gate runs. */
 export function RunStep({ api }: RunStepProps) {
   const { draft } = api
-  const { start, isStarting, errorMessage } = useStartRun(api.reset)
+  const { start, isStarting, errorMessage } = useStartRun()
   const custom = draft.custom
   const trust = TRUST_OPTIONS.find((option) => option.value === custom.trust_level)?.label
   const items = draft.scenarioId

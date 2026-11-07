@@ -34,14 +34,24 @@ def _sample(frame: pd.DataFrame) -> pd.DataFrame:
     return frame.sample(min(ROWS_PER_TABLE, len(frame)), random_state=SEED) if len(frame) > ROWS_PER_TABLE else frame
 
 
-def records_view(paths: RunPaths, fields: list) -> dict:
+def record_table(paths: RunPaths, fields: list, name: str) -> dict | None:
+    """One released or staged table: its size, its columns with the technique behind each, and a sample of its rows."""
+    folder, _ = records_folder(paths)
+    path = next((p for p in table_files(Path(folder)) if p.stem == name), None) if folder else None
+    if path is None:
+        return None
+    frame = read_text_table(path)
+    shown = _sample(frame)
+    return {"name": name, "total": len(frame), "shown": len(shown), "columns": _column_notes(name, list(frame.columns), fields),
+            "rows": shown.values.tolist()}
+
+
+def records_index(paths: RunPaths) -> dict:
+    """Whether rows were released, held or not written, and the names of their tables, without reading any of them."""
     folder, status = records_folder(paths)
-    if folder is None:
-        return {"status": status, "tables": []}
-    tables = []
-    for path in table_files(Path(folder)):
-        frame = read_text_table(path)
-        shown = _sample(frame)
-        tables.append({"name": path.stem, "total": len(frame), "shown": len(shown), "columns": _column_notes(path.stem, list(frame.columns), fields),
-                       "rows": shown.values.tolist()})
-    return {"status": status, "tables": tables, "limit": ROWS_PER_TABLE}
+    return {"status": status, "tables": [path.stem for path in table_files(Path(folder))] if folder else [], "limit": ROWS_PER_TABLE}
+
+
+def records_view(paths: RunPaths, fields: list) -> dict:
+    index = records_index(paths)
+    return {**index, "tables": [record_table(paths, fields, name) for name in index["tables"]]}

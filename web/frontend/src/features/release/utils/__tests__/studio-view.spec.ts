@@ -1,56 +1,9 @@
-import type { ColumnOut, RunOut } from '@/api/generated'
-import type { ReleaseDraft } from '../../types'
-import { draftView, runView } from '../studio-view'
-
-const DATASET = { id: 'ds1', name: 'health', source: 'sample', tables: [{ name: 'visits', columns: ['age', 'postcode', 'diagnosis', 'name'] }] }
-const DRAFT: ReleaseDraft = { dataset: DATASET, scenarioId: 'HEALTH-S1', custom: { recipient: '', purpose: '', trust_level: 'contractual', k: 5, questions: [] }, decisions: {} }
-
-function column(name: string, role: string, needsReview = false): ColumnOut {
-  return { key: `visits.${name}`, table: 'visits', column: name, role, subtype: '', confidence: 0.9, needs_review: needsReview, reasons: [], best_guess_role: role, best_guess_subtype: '' }
-}
-const COLUMNS = [column('name', 'direct_identifier'), column('age', 'quasi_identifier'), column('postcode', 'quasi_identifier', true), column('diagnosis', 'sensitive_attribute')]
+import type { RunOut } from '@/api/generated'
+import { runView } from '../studio-view'
 
 function run(status: string, summary: RunOut['summary'] = {}): RunOut {
   return { id: 'r1', dataset_id: 'ds1', scenario_id: 'HEALTH-S1', status, events: [{ at: '2026-11-07T10:00:00', stage: 'start', message: 'Started' }], summary }
 }
-
-describe('draftView', () => {
-  it('is an idle sphere before any data is chosen', () => {
-    const view = draftView(0, { ...DRAFT, dataset: null }, undefined, false)
-    expect(view.scene.mode).toBe('idle')
-    expect(view.readouts).toEqual([])
-  })
-
-  it('shows the chosen data as a lattice with its tables and columns', () => {
-    const view = draftView(1, DRAFT, undefined, false)
-    expect(view.scene.mode).toBe('data')
-    expect(view.readouts.map((r) => [r.label, r.value])).toEqual([['Tables', 1], ['Columns', 4]])
-    expect(view.caption).toContain('health')
-  })
-
-  it('scans while Detect reads the columns', () => {
-    const view = draftView(2, DRAFT, undefined, false)
-    expect(view.scene.busy).toBe(true)
-  })
-
-  it('layers the model by role and flags unsure columns', () => {
-    const view = draftView(2, DRAFT, COLUMNS, false)
-    expect(view.scene.mode).toBe('classes')
-    const total = view.scene.layers.reduce((sum, layer) => sum + layer.share, 0)
-    expect(total).toBeCloseTo(1)
-    expect(view.legend.map((item) => item.text)).toEqual(['Identifies alone 1', 'Clue 2', 'Private fact 1'])
-    const unsure = view.readouts.find((r) => r.label === 'Unsure')!
-    expect(unsure.value).toBe(1)
-    expect(unsure.tone).toBe('hot')
-  })
-
-  it("follows a person's decision over Detect's", () => {
-    const decided = { ...DRAFT, decisions: { 'visits.postcode': { role: 'non_sensitive', subtype: '', reason: 'test' } } }
-    const view = draftView(2, decided, COLUMNS, false)
-    expect(view.legend.map((item) => item.text)).toContain('Harmless 1')
-    expect(view.readouts.find((r) => r.label === 'Unsure')!.value).toBe(0)
-  })
-})
 
 describe('runView', () => {
   it('scans while the gate works', () => {

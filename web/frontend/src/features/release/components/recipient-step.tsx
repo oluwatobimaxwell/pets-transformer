@@ -1,7 +1,9 @@
 import { useState } from 'react'
-import { Tabs } from '@chakra-ui/react'
-import { ListChecks, PenLine } from 'lucide-react'
+import { HStack, Stack, Text } from '@chakra-ui/react'
+import { Info } from 'lucide-react'
 import type { ReleaseDraftApi } from '../hooks/use-release-draft'
+import { initialRecipientMode, RECIPIENT_MODES, type RecipientMode } from '../utils/recipient-modes'
+import { ChoiceCards } from './choice-cards'
 import { CustomScenarioForm } from './custom-scenario-form'
 import { ScenarioList } from './scenario-list'
 
@@ -9,31 +11,40 @@ interface RecipientStepProps {
   api: ReleaseDraftApi
 }
 
-/** A challenge scenario for a challenge sample, or the person's own description for anything. */
+/**
+ * Who receives the data. A challenge dataset opens on its challenge scenarios, with describing your own recipient as the
+ * other choice; uploaded data can only be described.
+ */
 export function RecipientStep({ api }: RecipientStepProps) {
   const { draft, chooseScenario } = api
   const dataset = draft.dataset!
   const isSample = dataset.source === 'sample'
-  const [tab, setTab] = useState(draft.scenarioId ? 'challenge' : 'custom')
-  const switchTab = (value: string) => {
-    setTab(value)
-    if (value === 'custom') chooseScenario(null)
+  const [mode, setMode] = useState<RecipientMode>(() => initialRecipientMode(draft))
+  const switchMode = (next: RecipientMode) => {
+    setMode(next)
+    if (next === 'custom') chooseScenario(null)
   }
   return (
-    <Tabs.Root value={tab} onValueChange={(e) => switchTab(e.value)} variant="line" lazyMount>
-      <Tabs.List>
-        <Tabs.Trigger value="custom"><PenLine size={16} aria-hidden="true" />Describe your recipient</Tabs.Trigger>
-        {isSample && <Tabs.Trigger value="challenge"><ListChecks size={16} aria-hidden="true" />Use a challenge scenario</Tabs.Trigger>}
-      </Tabs.List>
-      <Tabs.Content value="custom" pt="6">
-        <CustomScenarioForm dataset={dataset} custom={draft.custom} onChange={api.updateCustom} onAddQuestion={api.addQuestion}
-          onChangeQuestion={api.changeQuestion} onRemoveQuestion={api.removeQuestion} />
-      </Tabs.Content>
-      {isSample && (
-        <Tabs.Content value="challenge" pt="6">
-          <ScenarioList dataset={dataset.name} chosen={draft.scenarioId} onChoose={chooseScenario} />
-        </Tabs.Content>
+    <Stack gap="6">
+      {isSample ? (
+        <ChoiceCards options={RECIPIENT_MODES} value={mode} onChange={switchMode} label="How to describe the recipient" />
+      ) : (
+        <HStack gap="2.5" textStyle="sm" color="fg.muted">
+          <Info size={16} aria-hidden="true" />
+          <Text>Challenge scenarios belong to the challenge datasets, so describe the recipient of your own data below.</Text>
+        </HStack>
       )}
-    </Tabs.Root>
+      <div key={mode} className="stagger">
+        {mode === 'challenge' ? (
+          <Stack gap="3">
+            <Text textStyle="sm" color="fg.muted">Choose the scenario that matches who receives <Text as="span" fontFamily="mono" color="fg">{dataset.name}</Text>.</Text>
+            <ScenarioList dataset={dataset.name} chosen={draft.scenarioId} onChoose={chooseScenario} />
+          </Stack>
+        ) : (
+          <CustomScenarioForm dataset={dataset} custom={draft.custom} onChange={api.updateCustom} onAddQuestion={api.addQuestion}
+            onChangeQuestion={api.changeQuestion} onRemoveQuestion={api.removeQuestion} />
+        )}
+      </div>
+    </Stack>
   )
 }

@@ -3,6 +3,43 @@
 import { z } from 'zod';
 
 /**
+ * AnswerFamilyOut
+ *
+ * A family of published questions, how many there are, its share of the budget and the noise it gets.
+ */
+export const zAnswerFamilyOut = z.object({
+    questions: z.string(),
+    count: z.number().int(),
+    epsilon: z.number(),
+    noise: z.string()
+});
+
+/**
+ * AnswersOut
+ *
+ * For a public release, which gets noisy answers instead of rows: the guarantee in plain lines and the budget per family.
+ */
+export const zAnswersOut = z.object({
+    guarantee: z.array(z.string()),
+    families: z.array(zAnswerFamilyOut)
+});
+
+/**
+ * AttackerOut
+ *
+ * The engine's own stronger attacker on one table: the share of known people it singles out with each kind of knowledge.
+ */
+export const zAttackerOut = z.object({
+    table: z.string(),
+    clues: z.array(z.string()),
+    clues_only: z.number().nullable(),
+    worst_fact: z.string(),
+    worst_fact_value: z.number().nullable(),
+    all_facts: z.number().nullable(),
+    facts: z.array(z.string())
+});
+
+/**
  * Body_upload_dataset
  */
 export const zBodyUploadDataset = z.object({
@@ -25,6 +62,119 @@ export const zColumnOut = z.object({
     reasons: z.array(z.string()),
     best_guess_role: z.string(),
     best_guess_subtype: z.string()
+});
+
+/**
+ * ComparisonRowOut
+ *
+ * One answer to a required question, asked of the original data and of the protected data.
+ */
+export const zComparisonRowOut = z.object({
+    label: z.string(),
+    before: z.union([
+        z.number(),
+        z.string()
+    ]).nullish(),
+    after: z.union([
+        z.number(),
+        z.string()
+    ]).nullish()
+});
+
+/**
+ * FieldEvidenceOut
+ *
+ * One source column: what Detect saw, the technique Select chose, why, and which questions need it.
+ */
+export const zFieldEvidenceOut = z.object({
+    field: z.string(),
+    role: z.string(),
+    subtype: z.string().nullish(),
+    confidence: z.number().nullish(),
+    detected_by: z.string().optional().default(''),
+    evidence: z.array(z.string()).optional().default([]),
+    needs_review: z.boolean().optional().default(false),
+    pet: z.string(),
+    output_column: z.string().optional().default(''),
+    why: z.string(),
+    needed_by: z.array(z.string()).optional().default([])
+});
+
+/**
+ * GateCheckOut
+ *
+ * One gate check on one attempt. `severity` is what a failure costs: block, review or info.
+ */
+export const zGateCheckOut = z.object({
+    name: z.string(),
+    passed: z.boolean(),
+    severity: z.string(),
+    detail: z.string()
+});
+
+/**
+ * GateAttemptOut
+ *
+ * One pass of the gate: every check and the status they add up to.
+ */
+export const zGateAttemptOut = z.object({
+    attempt: z.number().int(),
+    status: z.string(),
+    checks: z.array(zGateCheckOut)
+});
+
+/**
+ * HeadlineTileOut
+ *
+ * One headline number of a release. `format` says how to show `value`: score, percent, count (of `total`) or epsilon.
+ */
+export const zHeadlineTileOut = z.object({
+    label: z.string(),
+    value: z.number(),
+    format: z.string(),
+    meaning: z.string(),
+    total: z.number().int().nullish()
+});
+
+/**
+ * NamedValueOut
+ *
+ * A measurement behind a score, such as "rel error: 0.0006".
+ */
+export const zNamedValueOut = z.object({
+    name: z.string(),
+    value: z.union([
+        z.number(),
+        z.string()
+    ])
+});
+
+/**
+ * PreviewColumnOut
+ *
+ * One column that leaves: where it came from, its technique, and its first values before and after.
+ *
+ * `after` is empty until the protected rows are written; a single empty value is a row the gate withheld.
+ */
+export const zPreviewColumnOut = z.object({
+    field: z.string(),
+    output_column: z.string(),
+    technique: z.string(),
+    role: z.string(),
+    before: z.array(z.string()).nullish(),
+    after: z.array(z.union([z.string(), z.null()])).nullish()
+});
+
+/**
+ * PreviewOut
+ *
+ * A few rows of a run, following the gate. No columns until Select decides. `before` only for synthetic challenge data.
+ */
+export const zPreviewOut = z.object({
+    table: z.string(),
+    synthetic: z.boolean(),
+    rows: z.number().int(),
+    columns: z.array(zPreviewColumnOut)
 });
 
 /**
@@ -64,6 +214,42 @@ export const zCustomScenarioIn = z.object({
 });
 
 /**
+ * RecordColumnOut
+ *
+ * A released column, the technique that made it and the source column it came from. Empty for answer tables.
+ */
+export const zRecordColumnOut = z.object({
+    name: z.string(),
+    technique: z.string(),
+    source: z.string(),
+    role: z.string()
+});
+
+/**
+ * RecordTableOut
+ *
+ * A released or staged table: how many rows it has and a random sample of them, in column order.
+ */
+export const zRecordTableOut = z.object({
+    name: z.string(),
+    total: z.number().int(),
+    shown: z.number().int(),
+    columns: z.array(zRecordColumnOut),
+    rows: z.array(z.array(z.unknown()))
+});
+
+/**
+ * RecordsIndexOut
+ *
+ * Whether rows were released, held for review or not written ("none"), and the names of their tables.
+ */
+export const zRecordsIndexOut = z.object({
+    status: z.string(),
+    tables: z.array(z.string()),
+    limit: z.number().int()
+});
+
+/**
  * ReviewDecisionIn
  *
  * A person's decision about one column, overriding Detect.
@@ -72,6 +258,19 @@ export const zReviewDecisionIn = z.object({
     role: z.string(),
     subtype: z.string(),
     reason: z.string().optional().default('Decided by a person in the web app')
+});
+
+/**
+ * RiskOut
+ *
+ * One scorecard risk for one table, from 0 (none found) to 1 (every record exposed).
+ */
+export const zRiskOut = z.object({
+    table: z.string(),
+    metric: z.string(),
+    name: z.string(),
+    meaning: z.string(),
+    value: z.number()
 });
 
 /**
@@ -130,6 +329,19 @@ export const zSampleRequest = z.object({
 });
 
 /**
+ * ScenarioEvidenceOut
+ *
+ * Who the release is for and why. Data outside the challenge package has no recipient or purpose.
+ */
+export const zScenarioEvidenceOut = z.object({
+    id: z.string(),
+    trust_level: z.string(),
+    recipient: z.string().nullish(),
+    purpose: z.string().nullish(),
+    k_required: z.number().int().nullish()
+});
+
+/**
  * ScenarioOut
  *
  * One of the challenge's sharing scenarios.
@@ -144,6 +356,17 @@ export const zScenarioOut = z.object({
     k: z.number().int(),
     task_ids: z.array(z.string()),
     public_output: z.enum(['answers', 'blocked']).nullish()
+});
+
+/**
+ * ScoreBandOut
+ *
+ * The engine's reading of a score: a word such as "Close", its tone and what it means.
+ */
+export const zScoreBandOut = z.object({
+    word: z.string(),
+    tone: z.string(),
+    meaning: z.string().optional().default('')
 });
 
 /**
@@ -164,6 +387,61 @@ export const zDatasetOut = z.object({
     name: z.string(),
     source: z.string(),
     tables: z.array(zTableOut)
+});
+
+/**
+ * TaskEvidenceOut
+ *
+ * A question the recipient must still be able to answer, how it's scored, and both answers side by side.
+ */
+export const zTaskEvidenceOut = z.object({
+    id: z.string(),
+    question: z.string(),
+    scoring: z.string(),
+    needs: z.string(),
+    score: z.number().nullable(),
+    band: zScoreBandOut,
+    metric: z.string(),
+    detail: z.array(zNamedValueOut),
+    comparison: z.array(zComparisonRowOut),
+    change: z.string(),
+    note: z.string()
+});
+
+/**
+ * EvidenceOut
+ *
+ * Everything behind a finished run's decision, for its page. The rows themselves come one table at a time.
+ */
+export const zEvidenceOut = z.object({
+    engine: z.string(),
+    run: z.string(),
+    generated_at: z.string(),
+    status: z.string(),
+    scenario: zScenarioEvidenceOut,
+    headline: z.array(zHeadlineTileOut),
+    composite: z.number().nullish(),
+    composite_meaning: z.string(),
+    tasks: z.array(zTaskEvidenceOut),
+    risks: z.array(zRiskOut),
+    attacker: z.array(zAttackerOut),
+    remaining: z.array(z.string()),
+    answers: zAnswersOut.nullish(),
+    fields: z.array(zFieldEvidenceOut),
+    tuning: z.record(z.string()),
+    recoding: z.array(z.string()),
+    attempts: z.array(zGateAttemptOut),
+    records: zRecordsIndexOut
+});
+
+/**
+ * TechniqueRulesOut
+ *
+ * The technique each role gets when a question needs the column, and the subtypes that override it.
+ */
+export const zTechniqueRulesOut = z.object({
+    roles: z.record(z.string()),
+    subtypes: z.record(z.string())
 });
 
 export const zListSamplesData = z.object({
@@ -281,13 +559,32 @@ export const zGetRunData = z.object({
  */
 export const zGetRunResponse = zRunOut;
 
-export const zGetDashboardData = z.object({
+export const zGetEvidenceData = z.object({
     body: z.never().optional(),
     path: z.object({
         run_id: z.string()
     }),
     query: z.never().optional()
 });
+
+/**
+ * Successful Response
+ */
+export const zGetEvidenceResponse = zEvidenceOut;
+
+export const zGetRecordsData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        run_id: z.string(),
+        table: z.string()
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * Successful Response
+ */
+export const zGetRecordsResponse = zRecordTableOut;
 
 export const zDownloadData = z.object({
     body: z.never().optional(),
@@ -297,3 +594,27 @@ export const zDownloadData = z.object({
     }),
     query: z.never().optional()
 });
+
+export const zGetPreviewData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        run_id: z.string()
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * Successful Response
+ */
+export const zGetPreviewResponse = zPreviewOut;
+
+export const zGetTechniqueRulesData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+/**
+ * Successful Response
+ */
+export const zGetTechniqueRulesResponse = zTechniqueRulesOut;

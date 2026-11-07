@@ -3,7 +3,7 @@ import type { Decisions } from '../types'
 import { ROLE_ORDER } from './role-words'
 
 /** How many columns hold each kind of data, counting a person's decision over Detect's, in the order roles are explained. */
-export function roleCounts(columns: ColumnOut[], decisions: Decisions) {
+export function roleCounts(columns: Pick<ColumnOut, 'key' | 'role'>[], decisions: Decisions = {}) {
   const counts = new Map<string, number>()
   for (const column of columns) {
     const role = decisions[column.key]?.role ?? column.role
