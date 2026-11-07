@@ -16,6 +16,8 @@ export PETS_ENGINE_KEY="$(python3 -c 'import secrets; print(secrets.token_hex(24
 
 `PETS_ENGINE_KEY` is the secret behind every pseudonym. The engine refuses to run without it and never writes it to disk. Keep it out of the repository.
 
+With Docker, run any command below as `docker compose run --rm engine <command>` from the repository root, as the main README shows.
+
 ## Commands
 
 ```bash

@@ -1,0 +1,15 @@
+# Keep secrets, private run output and local environments out of every image.
+**/.env
+**/.venv
+**/venv
+**/node_modules
+**/__pycache__
+**/*.egg-info
+**/.pytest_cache
+**/dist
+**/*.tsbuildinfo
+**/.DS_Store
+.git
+runs
+workspace
+pets_submission

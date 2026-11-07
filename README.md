@@ -33,18 +33,45 @@ The `unseen` file has meaningless column names and no answers in the package. It
 
 ## Quick start
 
+The challenge package (`TRUSTED_PETS_PROVING_GROUND_2026`) sits next to this folder and isn't part of this repository. First create
+`.env`, which says where the package is and holds the secret behind every pseudonym. It's excluded from git and must never be shared:
+
+```bash
+printf 'PETS_ROOT=../TRUSTED_PETS_PROVING_GROUND_2026\nPETS_ENGINE_KEY=%s\n' "$(openssl rand -hex 24)" > .env
+```
+
+### With Docker
+
+Needs Docker with Compose 2.17 or newer, and nothing else: Python, Node and every library are inside the images.
+
+```bash
+docker compose up --build
+```
+
+Then open http://localhost:8080 for the web app. The command line runs in the same image, with this folder mounted at `/work` and
+the challenge package at `/data/challenge`:
+
+```bash
+docker compose run --rm engine run /data/challenge/data/health --scenario HEALTH-S1 --out runs/health-s1
+open runs/health-s1/evidence/dashboard.html
+```
+
+### Without Docker
+
+Needs Python 3.10 to 3.12. The pinned library versions don't install on Python 3.13 or newer.
+
 ```bash
 python3 -m venv .venv
 .venv/bin/pip install -e ../TRUSTED_PETS_PROVING_GROUND_2026/toolkit -e engine
-printf 'PETS_ROOT=../TRUSTED_PETS_PROVING_GROUND_2026\nPETS_ENGINE_KEY=%s\n' "$(python3 -c 'import secrets; print(secrets.token_hex(24))')" > .env
 set -a; . ./.env; set +a
 .venv/bin/pets-engine run $PETS_ROOT/data/health --scenario HEALTH-S1 --out runs/health-s1
 open runs/health-s1/evidence/dashboard.html
 ```
 
-The challenge package (`TRUSTED_PETS_PROVING_GROUND_2026`) sits next to this folder and isn't part of this repository. `.env` holds the secret behind every pseudonym, so it's excluded from git and must never be shared.
+### Your own data
 
-For your own data, write a scenario file with the recipient, trust level, look-alike bar and the questions they need answered:
+Write a scenario file with the recipient, trust level, look-alike bar and the questions they need answered. With Docker, put the data
+folder inside this one and use `docker compose run --rm engine` in place of `.venv/bin/pets-engine`:
 
 ```bash
 .venv/bin/pets-engine init-scenario ./my_data --out scenario.yaml
@@ -56,8 +83,8 @@ See [engine/README.md](engine/README.md) for every command, the scenario format,
 ## Web app
 
 The same engine behind a local web app: upload data or pick a sample, describe the recipient and their questions, confirm the columns
-Detect was unsure about, run the gate, and download the protected data and evidence. Setup and run steps are in
-[web/README.md](web/README.md). Run from the web app and from the command line, `HEALTH-S1` gives identical results.
+Detect was unsure about, run the gate, and download the protected data and evidence. With Docker it starts with
+`docker compose up --build`; steps for working on its code are in [web/README.md](web/README.md). Run from the web app and from the command line, `HEALTH-S1` gives identical results.
 
 ## How it works
 
@@ -74,6 +101,7 @@ No large language model or outside service sees the data.
 
 Engine: Python, pandas, NumPy, scikit-learn and PyYAML, with the challenge's `pets-eval` toolkit (MIT, © Since AI ry) for scoring.
 Web app: FastAPI, React, TypeScript, Chakra UI and TanStack Query, scaffolded with blacksmith-cli.
+Packaging: Docker Compose, with nginx serving the web app.
 The challenge data is CC BY 4.0, © Since AI ry, with postcode centroids from GeoNames (CC BY 4.0).
 
 ## AI tools

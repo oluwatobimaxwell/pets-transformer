@@ -6,6 +6,12 @@ release gate, and download the protected data and its evidence.
 It runs on your own machine and has no sign-in, so never expose it to a network. Uploaded data, keys and row maps stay in
 `../workspace/`, which git ignores, and the API only ever serves the protected release, the evidence and the dashboard.
 
+## With Docker
+
+From the repository root, run `docker compose up --build` and open http://localhost:8080. nginx serves the built page and passes
+`/api` to the backend, whose port stays inside Docker. Uploads, keys and row maps go to the `workspace` volume, and
+`docker compose down -v` deletes them. The rest of this page is for working on the code.
+
 ## Setup
 
 From this folder, with the challenge package next to the repository and the repository's `.env` holding `PETS_ENGINE_KEY`:
@@ -47,6 +53,7 @@ cd frontend && npm run openapi-ts
 | `backend/app/services/` | Register data, cache Detect's answer, write the run's scenario and review files, run the engine in the background one run at a time |
 | `frontend/src/features/release/` | The four steps, the run page and their hooks |
 | `frontend/src/api/generated/` | The typed client, generated from the backend's OpenAPI document |
+| `../docker/` | The two images: engine with the API, and nginx serving the built page |
 
 Each run folder in `../workspace/runs/` keeps the scenario and review a person chose, next to the engine's usual output, so every
 release can be traced back to the decisions behind it.

@@ -9,7 +9,7 @@ PETs Transformer: a privacy release gate
 Tell it who gets the data. It protects it, proves it's still useful, and blocks any release that fails.
 
 ## Built with (first five show on the vote card)
-Python, pandas, scikit-learn, FastAPI, React, pets-eval, TypeScript, Chakra UI
+Python, pandas, scikit-learn, FastAPI, React, pets-eval, TypeScript, Chakra UI, Docker
 
 ## About the project (5,000 characters max)
 The problem
