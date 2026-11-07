@@ -121,7 +121,8 @@ The team built this with Claude Code (Anthropic) as an AI coding assistant. The 
 
 ## What was built at the event
 
-Everything in this repository was written during Since AI Hackathon 2026, 6–8 November, except the web app's skeleton. The hash check, the
-birth-date and trade-union rules, differentially private answers and blanking one clue instead of deleting a row follow ideas from ProofPET, a teammate's prototype built at the same event. That was generated
-at the event with blacksmith-cli, a pre-existing open-source tool, then stripped and rebuilt (details in [web/README.md](web/README.md)).
+Everything in this repository was written during Since AI Hackathon 2026, 6–8 November, except the web app's skeleton. That was
+generated at the event with blacksmith-cli, a pre-existing open-source tool, then stripped and rebuilt (details in [web/README.md](web/README.md)).
+The hash check, the birth-date and trade-union rules, differentially private answers, and blanking one clue instead of deleting a row
+follow ideas from ProofPET, a teammate's prototype built at the same event.
 The engine depends on the challenge's `pets-eval` toolkit, which isn't part of this repository.
