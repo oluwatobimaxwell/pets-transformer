@@ -100,23 +100,28 @@ describe('the release studio', () => {
     const { router, user } = renderAt('/release/data')
     await user.click(await screen.findByRole('button', { name: /use health, healthcare/i }))
     await waitFor(() => expect(router.state.location.pathname).toBe('/release/recipient'))
+    // Navigations render in a transition, so wait for the page itself, not just the address
+    await screen.findByRole('heading', { level: 1, name: /who receives it/i })
 
     // Continue waits for a recipient, and says why
-    console.log('DEBUG', JSON.stringify(screen.queryAllByRole('button', { hidden: true }).map((b) => b.textContent)), JSON.stringify(screen.queryAllByRole('heading', { hidden: true }).map((b) => b.textContent)))
     const next = screen.getByRole('button', { name: /continue to columns/i })
     expect(next).toBeDisabled()
     expect(screen.getByText(/name the recipient or choose a scenario/i)).toBeInTheDocument()
 
     await user.click(screen.getByRole('tab', { name: /use a challenge scenario/i }))
+    // The scenario cards carry the trust level as a coloured tag
+    expect(await screen.findByText('Controlled research environment')).toBeInTheDocument()
     await user.click(await screen.findByRole('radio', { name: /HEALTH-S1/ }))
     expect(next).toBeEnabled()
     await user.click(next)
     await waitFor(() => expect(router.state.location.pathname).toBe('/release/columns'))
+    await screen.findByRole('heading', { level: 1, name: /check what detect found/i })
     expect(await screen.findByText(/1 unsure column/i)).toBeInTheDocument()
 
     // Back keeps the chosen scenario
     await user.click(screen.getByRole('button', { name: /^back$/i }))
     await waitFor(() => expect(router.state.location.pathname).toBe('/release/recipient'))
+    await screen.findByRole('heading', { level: 1, name: /who receives it/i })
     expect(await screen.findByRole('radio', { name: /HEALTH-S1/ })).toHaveAttribute('aria-checked', 'true')
   })
 
