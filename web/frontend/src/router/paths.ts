@@ -3,7 +3,16 @@
  */
 
 export enum Path {
+  /** The landing page: what the gate does, with a live 3D demo. */
   Home = '/',
+  /** The release studio. Each step has its own page, in this order. */
+  Release = '/release',
+  ReleaseData = '/release/data',
+  ReleaseRecipient = '/release/recipient',
+  ReleaseColumns = '/release/columns',
+  ReleaseRun = '/release/run',
+  /** Every run on this machine, newest first. */
+  Runs = '/runs',
   Run = '/runs/:runId',
   // blacksmith:path
 }
