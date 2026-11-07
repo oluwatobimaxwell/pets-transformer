@@ -28,12 +28,14 @@ export function ScenarioList({ dataset, chosen, onChoose }: ScenarioListProps) {
         const TrustIcon = trust.icon
         return (
           <Box asChild key={scenario.id} textAlign="start" w="full" rounded="l3" p={{ base: '4', md: '5' }} borderWidth="1px"
-            bg={selected ? 'brand.subtle' : 'bg.panel'} borderColor={selected ? 'brand.solid' : 'border'}
-            boxShadow={selected ? '0 0 0 1px var(--chakra-colors-brand-solid)' : undefined}
-            transition="border-color 180ms, background 180ms" _hover={selected ? undefined : { borderColor: 'brand.border' }}>
+            bg={selected ? 'brand.subtle' : 'bg.raised'} borderColor={selected ? 'brand.solid' : 'border.emphasized'}
+            boxShadow={selected ? 'none' : 'key'} transform={selected ? 'translateY(3px)' : undefined}
+            transition="border-color 180ms, background 180ms, box-shadow 180ms, transform 180ms var(--chakra-easings-out)"
+            _hover={selected ? undefined : { borderColor: 'brand.solid', transform: 'translateY(-1px)' }}>
             <button type="button" role="radio" aria-checked={selected} aria-label={`${scenario.id}: ${scenario.title}`} onClick={() => onChoose(scenario.id)}>
               <HStack gap="4" align="start">
-                <Circle size="9" flexShrink="0" bg={selected ? 'brand.solid' : 'bg.muted'} color={selected ? 'brand.contrast' : 'fg'}>
+                <Circle size="9" flexShrink="0" colorPalette={selected ? 'brand' : trust.palette}
+                  bg={selected ? 'colorPalette.solid' : 'colorPalette.subtle'} color={selected ? 'colorPalette.contrast' : 'colorPalette.fg'}>
                   {selected ? <Check size={18} strokeWidth={2.5} aria-hidden="true" /> : <TrustIcon size={18} aria-hidden="true" />}
                 </Circle>
                 <Stack gap="2" flex="1" minW="0">
@@ -51,7 +53,7 @@ export function ScenarioList({ dataset, chosen, onChoose }: ScenarioListProps) {
                   </HStack>
                   <Text textStyle="sm" color="fg.muted">For {scenario.recipient}. {scenario.purpose}</Text>
                   <HStack gap="4" flexWrap="wrap" textStyle="xs" color="fg.muted">
-                    <HStack gap="1.5"><TrustIcon size={13} aria-hidden="true" />{trust.label}</HStack>
+                    <Badge colorPalette={trust.palette} variant="subtle" size="sm"><TrustIcon size={12} aria-hidden="true" />{trust.label}</Badge>
                     <HStack gap="1.5"><ListChecks size={13} aria-hidden="true" />{scenario.task_ids.length} required questions</HStack>
                     {scenario.k ? <HStack gap="1.5"><Users size={13} aria-hidden="true" />At least {scenario.k} look-alikes per row</HStack> : null}
                   </HStack>

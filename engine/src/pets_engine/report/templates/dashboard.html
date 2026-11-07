@@ -12,10 +12,10 @@ document.documentElement.dataset.theme = new URLSearchParams(location.search).ge
 /* Layout idea: an audit file. Verdict and numbers first, then each claim with the evidence behind it, then the data itself. */
 :root{
   color-scheme:light;
-  --bg:oklch(0.985 0.003 262); --surface:oklch(1 0 0); --sunk:oklch(0.955 0.006 262); --line:oklch(0.9 0.007 262);
-  --ink:oklch(0.21 0.015 262); --muted:oklch(0.44 0.016 262);
-  --accent:oklch(0.43 0.15 262); --accent-soft:oklch(0.96 0.02 262);
-  --good:oklch(0.48 0.12 152); --good-soft:oklch(0.95 0.04 152); --warn:oklch(0.5 0.11 70); --warn-soft:oklch(0.96 0.045 85);
+  --bg:#F2EFE7; --surface:#FBFAF6; --sunk:#ECE8DE; --line:#E2DCCF;
+  --ink:#10241E; --muted:#525F5A;
+  --accent:#015D47; --accent-soft:#E1F0E9;
+  --good:#015D47; --good-soft:#E1F0E9; --warn:oklch(0.5 0.11 70); --warn-soft:oklch(0.96 0.045 85);
   --bad:oklch(0.5 0.17 27); --bad-soft:oklch(0.95 0.03 27); --token:oklch(0.45 0.15 300); --token-soft:oklch(0.95 0.03 300);
   --ph:oklch(0.42 0.1 240); --ph-soft:oklch(0.94 0.03 240);
   --body:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
@@ -23,10 +23,10 @@ document.documentElement.dataset.theme = new URLSearchParams(location.search).ge
 }
 :root[data-theme="dark"]{
   color-scheme:dark;
-  --bg:oklch(0.165 0.01 262); --surface:oklch(0.2 0.011 262); --sunk:oklch(0.24 0.012 262); --line:oklch(0.29 0.013 262);
-  --ink:oklch(0.95 0.005 262); --muted:oklch(0.76 0.012 262);
-  --accent:oklch(0.72 0.12 262); --accent-soft:oklch(0.26 0.045 262);
-  --good:oklch(0.78 0.13 152); --good-soft:oklch(0.27 0.05 152); --warn:oklch(0.82 0.12 80); --warn-soft:oklch(0.29 0.05 80);
+  --bg:#0A1713; --surface:#0F201B; --sunk:#132822; --line:#22403A;
+  --ink:#E6F0EC; --muted:#A9BEB6;
+  --accent:#8FD3B6; --accent-soft:#123A2F;
+  --good:#8FD3B6; --good-soft:#123A2F; --warn:oklch(0.82 0.12 80); --warn-soft:oklch(0.29 0.05 80);
   --bad:oklch(0.74 0.14 27); --bad-soft:oklch(0.28 0.06 27); --token:oklch(0.8 0.1 300); --token-soft:oklch(0.28 0.06 300);
   --ph:oklch(0.8 0.08 240); --ph-soft:oklch(0.27 0.05 240);
 }

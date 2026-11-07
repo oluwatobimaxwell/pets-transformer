@@ -27,9 +27,11 @@ export function ReleaseSteps({ step, reachable, onStep }: ReleaseStepsProps) {
                 aria-label={`Step ${index + 1} of ${STEP_TITLES.length}: ${title}${done ? ', done' : ''}`}>
                 <Flex align="center" gap="3" direction={{ base: 'column', md: 'row' }}>
                   <Circle size="9" flexShrink="0" borderWidth="1px"
-                    bg={current ? 'brand.solid' : done ? 'brand.subtle' : 'bg.panel'}
-                    color={current ? 'brand.contrast' : done ? 'brand.fg' : 'fg.muted'}
-                    borderColor={current ? 'brand.solid' : done ? 'brand.border' : 'border.emphasized'}>
+                    bg={current ? 'accent.solid' : done ? 'brand.solid' : 'bg.raised'}
+                    color={current ? 'accent.contrast' : done ? 'brand.contrast' : 'fg.muted'}
+                    borderColor={current ? 'accent.edge' : done ? 'brand.solid' : 'border.emphasized'}
+                    boxShadow={current ? '0 3px 0 {colors.accent.edge}' : done ? '0 2px 0 {colors.brand.edge}' : '0 2px 0 {colors.border.emphasized}'}
+                    transition="background 250ms, box-shadow 250ms">
                     {done ? <Check size={16} strokeWidth={2.5} /> : <StepIcon size={16} />}
                   </Circle>
                   <Stack gap="0" minW="0" align={{ base: 'center', md: 'start' }}>

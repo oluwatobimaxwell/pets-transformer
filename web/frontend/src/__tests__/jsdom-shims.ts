@@ -18,6 +18,9 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 })
 
+// Canvas has no 2D context in jsdom; the 3D model then renders its frame and label only, as on a browser without canvas
+HTMLCanvasElement.prototype.getContext = (() => null) as typeof HTMLCanvasElement.prototype.getContext
+
 // ResizeObserver (overlays and menus measure themselves)
 globalThis.ResizeObserver ??= class {
   observe() {}
