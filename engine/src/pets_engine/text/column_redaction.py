@@ -5,10 +5,15 @@ from .record_context import build_name_book, values_by_row
 from .redactor import TextRedactor
 
 
+LINKING_ROLES = ("record_key", "technical_identifier")
+
+
 def group_column(frame, labels: list, table: str, tables: dict):
-    """The column that groups rows into one conversation, so a person keeps the same placeholder throughout."""
+    """The key that groups rows into one conversation, so a person keeps the same placeholder throughout and the shuffle moves
+    the conversation as one block. Only a linking key counts: grouping by a shared timestamp or category would keep whole hours
+    or categories in time order."""
     for label in labels:
-        if label.table != table or label.column not in frame.columns:
+        if label.table != table or label.column not in frame.columns or label.role not in LINKING_ROLES:
             continue
         shared = any(label.column in other.columns for name, other in tables.items() if name != table)
         if shared and not frame[label.column].is_unique:

@@ -6,12 +6,12 @@ from pathlib import Path
 
 import pandas as pd
 
-from pets_eval import parse
 from pets_eval.check import scan_path
 
 from ..domain.check import BLOCK, INFO, REVIEW, Check
 from ..tune.k_check import share_below_k
 from ..tune.search import clue_columns
+from ..utils.dates import TIME_SUBTYPES, to_moments
 
 LIST_LIMIT = 5
 MAX_CHANCE_OVERLAP = 0.005
@@ -51,9 +51,9 @@ def row_order_check(originals: dict, sources: dict, labels: list) -> Check:
     """Released row position must not follow time, or position alone reveals roughly when each row happened."""
     following = []
     for table, positions in sources.items():
-        times = [label.column for label in labels if label.table == table and label.subtype in ("TIMESTAMP", "DATE") and label.column in originals[table].columns]
+        times = [label.column for label in labels if label.table == table and label.subtype in TIME_SUBTYPES and label.column in originals[table].columns]
         for column in times:
-            stamps = parse.to_datetime(originals[table].loc[positions, column]).reset_index(drop=True)
+            stamps = to_moments(originals[table].loc[positions, column]).reset_index(drop=True)
             if stamps.notna().sum() < MIN_ROWS_FOR_ORDER:
                 continue
             rho = pd.Series(range(len(stamps))).corr(stamps.rank(), method="spearman")

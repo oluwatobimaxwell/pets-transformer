@@ -11,6 +11,8 @@ import pandas as pd
 
 from pets_eval import parse
 
+from ..utils.dates import ages_from_birth, to_moments
+
 TOKEN_LENGTH = 16
 TOKEN_PREFIX = "pt"  # letters stop a token that happens to be all digits from reading as a phone or card number
 _LIST_SPLIT = re.compile(r"\s*[;,]\s*")
@@ -65,7 +67,7 @@ def shorten_code(series: pd.Series, length: int = 3) -> pd.Series:
 
 
 def age_band(series: pd.Series, width: int, from_birth: bool) -> pd.Series:
-    ages = parse.age_from_birth(series) if from_birth else parse.parse_numeric(series)
+    ages = ages_from_birth(series) if from_birth else parse.parse_numeric(series)
     return parse.to_age_band(ages, width=width).astype("string").fillna("").astype(object)
 
 
@@ -90,7 +92,7 @@ TIME_FORMATS = {"minute": "%Y-%m-%d %H:%M", "hour_stamp": "%Y-%m-%d %H:00", "day
 
 
 def coarsen_time(series: pd.Series, level: str) -> pd.Series:
-    moments = parse.to_datetime(series)
+    moments = to_moments(series)
     return moments.dt.strftime(TIME_FORMATS[level]).where(moments.notna(), "")
 
 
