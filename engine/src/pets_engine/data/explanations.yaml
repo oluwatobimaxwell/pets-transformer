@@ -1,0 +1,52 @@
+# Plain-language meaning of every score the dashboard shows. Wording only: no number here changes a result.
+bands:
+  - {min: 0.95, word: Same answer, tone: good, meaning: "The protected data gives the same answer as the original."}
+  - {min: 0.80, word: Close, tone: good, meaning: "Small differences that rarely change a conclusion."}
+  - {min: 0.50, word: Rough, tone: warn, meaning: "Usable for direction, but numbers drift from the original."}
+  - {min: 0.00, word: Broken, tone: bad, meaning: "The answer no longer matches the original."}
+not_answerable: {word: "Can't answer", tone: bad, meaning: "A column this question needs was removed or coarsened too far."}
+
+headline:
+  privacy: "1.00 means the public checks found no remaining risk. It is evidence, not a guarantee."
+  utility: "The average score of the questions this recipient must still be able to answer."
+  composite: "A combined score that is only high when both privacy and usefulness are high."
+  rows: "Rows that stand out are removed. Linked rows in other tables go with them."
+
+tasks:
+  H-U1: {question: "How many flu-like visits happen each week, by age band?", scoring: "Compares weekly counts per 10-year age band. A 50% average error scores 0.", needs: "Arrival week, age, diagnosis"}
+  H-U2: {question: "How long do patients stay, by urgency level?", scoring: "Compares the median stay for each triage level. A 30% average error scores 0.", needs: "Triage level and length of stay"}
+  H-U3: {question: "Can a model trained on this data predict who is admitted?", scoring: "Trains on the protected data and tests on the original. The score is how much of the original model's skill remains.", needs: "Vital signs, triage, age, sex, arrival mode, diagnosis"}
+  H-U4: {question: "Does each large municipality keep its mix of diagnoses?", scoring: "Compares the diagnosis-group mix in the eight largest municipalities. A 15-point shift in the mix scores 0.", needs: "Municipality and diagnosis"}
+  H-U5: {question: "Do vital signs keep their spread?", scoring: "Compares the distributions of blood pressure, heart rate, temperature and oxygen level.", needs: "Vital signs"}
+  H-U6: {question: "How often do patients return within 30 days, by age band?", scoring: "Compares revisit rates per age band. A 50% average error scores 0.", needs: "Revisit flag or a consistent patient code, and age"}
+  H-U7: {question: "Does CRP still rise with temperature, and differ by diagnosis?", scoring: "Compares the CRP-temperature correlation and median CRP per diagnosis group, using the link between visits and lab results.", needs: "Visit link, lab test and value, temperature, diagnosis"}
+  H-U8: {question: "At what time of day do patients arrive?", scoring: "Compares the share of arrivals in each hour. A 30-point shift in the curve scores 0.", needs: "Arrival time of day"}
+  H-DP: {question: "Do published counts answer the dashboard's 254 queries?", scoring: "Average relative error across the query set. A 50% error scores 0.", needs: "Published answers or visit rows"}
+  CS-U1: {question: "Can a model still tell why customers got in touch?", scoring: "Trains an intent classifier on protected chats and tests it on original ones. The score is its accuracy compared with a model trained on the originals.", needs: "Chat text and contact reason"}
+  CS-U2: {question: "Do sentiment and satisfaction still move together?", scoring: "Compares their correlation. A difference of 0.5 scores 0.", needs: "Sentiment and satisfaction score"}
+  CS-U3: {question: "Is the mix of contact reasons unchanged?", scoring: "Compares the share of each contact reason. A 50-point shift scores 0.", needs: "Contact reason"}
+  CS-U4: {question: "How long does each kind of contact take?", scoring: "Compares average handle time per contact reason. A 50% average error scores 0.", needs: "Contact reason and handle time"}
+  CS-U5: {question: "Is everyday language still in the chats?", scoring: "Share of common words (used in at least 25 conversations) that survive redaction. Common names count too, so 1.00 isn't the target.", needs: "Chat text"}
+  CS-U6: {question: "How many contacts come by each channel and language?", scoring: "Compares contact counts per channel and language. A 50% average error scores 0.", needs: "Channel and language"}
+  CS-U7: {question: "How often is a problem solved on first contact, by reason?", scoring: "Compares resolution rates per contact reason. A 20-point difference scores 0.", needs: "Contact reason and resolution flag"}
+  CYBER-U1: {question: "Can analysts still spot impossible travel?", scoring: "Runs the same detection rule on protected and original logs. The score is the protected F1 divided by the original, capped at 1.00.", needs: "User, time, result, location"}
+  CYBER-U2: {question: "Can analysts still spot MFA fatigue attacks?", scoring: "Same detection rule on both versions. Protected F1 divided by original, capped at 1.00.", needs: "User, time, MFA result"}
+  CYBER-U3: {question: "Can analysts still spot password spraying?", scoring: "Same detection rule on both versions. Protected F1 divided by original, capped at 1.00.", needs: "Source network, user, time, result"}
+  CYBER-U4: {question: "Can analysts still spot data exfiltration?", scoring: "Same detection rule on both versions. Protected F1 divided by original, capped at 1.00.", needs: "Source, domain, time, bytes sent"}
+  CYBER-U5: {question: "Can analysts still follow a phishing email to the clicks it caused?", scoring: "Same detection rule on both versions. It needs the same user code in email and proxy logs.", needs: "Consistent user codes across logs"}
+  CYBER-U6: {question: "Can analysts still spot lateral movement after a foreign VPN login?", scoring: "Same detection rule on both versions. Protected F1 divided by original, capped at 1.00.", needs: "VPN user, time, country; alert host and time"}
+  CYBER-U7: {question: "Can analysts still spot insider bulk downloads?", scoring: "Same detection rule on both versions. Protected F1 divided by original, capped at 1.00.", needs: "User, time, domain, method; alert rule"}
+  CYBER-U8: {question: "Are attacker indicators kept so they can be shared?", scoring: "Share of attacker IPs, domains, devices and user agents kept exactly.", needs: "Attacker indicators"}
+  CYBER-U9: {question: "Does the same user get the same code in every log?", scoring: "Checks that one user always maps to one code and different users to different codes.", needs: "Record keys and user columns"}
+  CYBER-U10: {question: "How many sign-ins happen each hour?", scoring: "Compares the hourly sign-in curve. Any shift lowers the score.", needs: "Sign-in time"}
+  CYBER-U11: {question: "Is the mix of alert rules, verdicts and severities unchanged?", scoring: "Compares how often each combination appears.", needs: "Rule, verdict, severity"}
+
+risks:
+  direct identifiers retained: {name: "Identifiers left intact", meaning: "Share of names, ID numbers, emails and similar values that still appear unchanged."}
+  hashed ids reversible: {name: "Codes that can be reversed", meaning: "Share of codes an attacker could undo by hashing a list of guesses."}
+  records with k<5: {name: "Rows that stand out", meaning: "Share of rows whose combination of clues matches fewer than 5 rows. This counts only catalogued clue columns; the engine's own gate check also counts derived ones such as age band."}
+  linkage re-identification: {name: "People found by public attackers", meaning: "Share of attacker targets matched to exactly one record using the public background files."}
+  free-text identifier leakage: {name: "Personal details left in text", meaning: "Share of labelled names, numbers and addresses whose value can still be found in the text."}
+  trajectory unicity: {name: "Travellers singled out by place and time", meaning: "Share of people a few known places and times would single out."}
+  membership inference advantage: {name: "Can tell who was in the data", meaning: "How much better than a coin flip an attacker can tell whether a person's record was used."}
+  exact copies of original rows: {name: "Copied rows", meaning: "Share of released rows identical to an original row."}

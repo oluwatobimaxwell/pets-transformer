@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pets-engine"
+version = "0.1.0"
+description = "Privacy release gate: detect, select, tune, transform, verify and report."
+requires-python = ">=3.10"
+dependencies = ["numpy", "pandas>=2", "scipy", "scikit-learn", "joblib", "pyyaml"]
+
+[project.optional-dependencies]
+ner = ["transformers", "torch"]
+dev = ["pytest"]
+
+[project.scripts]
+pets-engine = "pets_engine.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+pets_engine = ["data/*.yaml", "models/*.joblib", "report/templates/*.html"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::FutureWarning"]

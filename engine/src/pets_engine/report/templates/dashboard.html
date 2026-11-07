@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Release evidence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: an audit file. Verdict and numbers first, then each claim with the evidence behind it, then the data itself. */
+:root{
+  color-scheme:light;
+  --bg:#f3f6f6; --surface:#ffffff; --sunk:#eaf0f0; --line:#d9e2e4; --ink:#13222c; --muted:#56666f;
+  --accent:#0c7484; --accent-soft:#dff1f3; --good:#1b7a4f; --good-soft:#e2f4ea; --warn:#9a5b00; --warn-soft:#fbefd9;
+  --bad:#b3261e; --bad-soft:#fbe5e2; --token:#46288a; --token-soft:#eee8fc; --ph:#0e4a75; --ph-soft:#dcedfb;
+  --display:"Familjen Grotesk","Avenir Next","Segoe UI",sans-serif;
+  --body:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root{color-scheme:dark;--bg:#0e1820;--surface:#15232d;--sunk:#1b2c38;--line:#2f4553;--ink:#e9f1f3;--muted:#a3b7c1;
+    --accent:#62d4e8;--accent-soft:#163f4a;--good:#6fdca8;--good-soft:#173a2c;--warn:#f2c14e;--warn-soft:#3d3115;
+    --bad:#ff8f73;--bad-soft:#45231c;--token:#c7b3ff;--token-soft:#2c2547;--ph:#8ccbff;--ph-soft:#17344b}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.55 var(--body)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 clamp(16px,3vw,32px)}
+h1,h2,h3{font-family:var(--display);font-weight:700;margin:0;text-wrap:balance}
+h1{font-size:clamp(1.6rem,3vw,2.2rem);line-height:1.12}
+h2{font-size:1.35rem}
+h3{font-size:1.02rem}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--mono)}
+.muted{color:var(--muted)}
+header.top{padding-top:28px;padding-bottom:18px;display:grid;gap:10px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.86rem;color:var(--muted)}
+.verdict{display:inline-flex;align-items:center;gap:8px;padding:4px 12px;border-radius:999px;font-weight:600;font-size:.88rem;width:fit-content}
+.verdict.release{background:var(--good-soft);color:var(--good)} .verdict.review{background:var(--warn-soft);color:var(--warn)} .verdict.block{background:var(--bad-soft);color:var(--bad)}
+.lede{max-width:75ch;margin:0;color:var(--muted)}
+nav.tabs{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+nav.tabs .wrap{display:flex;gap:4px;overflow-x:auto}
+nav.tabs a{padding:11px 12px;text-decoration:none;color:var(--muted);font-weight:500;white-space:nowrap;border-bottom:2px solid transparent}
+nav.tabs a:hover{color:var(--ink)}
+nav.tabs a.on{color:var(--ink);border-bottom-color:var(--accent)}
+section{padding:30px 0 6px;scroll-margin-top:52px}
+.section-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+.section-lede{margin:4px 0 16px;color:var(--muted);max-width:80ch}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.tile .label{font-size:.82rem;color:var(--muted);font-weight:500}
+.tile .value{font:700 2rem/1.1 var(--display);font-variant-numeric:tabular-nums;margin:4px 0 6px}
+.tile .value small{font-size:1rem;color:var(--muted);font-weight:500}
+.tile p{margin:0;font-size:.84rem;color:var(--muted)}
+.callout{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:0;padding:12px 16px}
+.callout h3{margin-bottom:4px}
+.callout ul{margin:0;padding-left:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.task{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:16px;padding:14px 16px;border-top:1px solid var(--line)}
+.task:first-child{border-top:0}
+.task .q{font-weight:600}
+.task .how{margin:3px 0 0;font-size:.88rem;color:var(--muted)}
+.chip{display:inline-block;padding:1px 7px;border-radius:5px;font:500 .74rem/1.5 var(--mono);background:var(--sunk);color:var(--muted);margin-right:6px;vertical-align:1px}
+.pill{display:inline-block;padding:1px 9px;border-radius:999px;font-size:.78rem;font-weight:600}
+.pill.good{background:var(--good-soft);color:var(--good)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.neutral{background:var(--sunk);color:var(--muted)}
+.scorebox{display:grid;gap:6px;align-content:start}
+.scoreline{display:flex;justify-content:space-between;align-items:baseline}
+.scoreline b{font:700 1.4rem var(--display);font-variant-numeric:tabular-nums}
+.bar{position:relative;height:8px;background:var(--sunk);border-radius:4px;overflow:visible}
+.bar i{position:absolute;inset:0 auto 0 0;border-radius:4px}
+.bar i.good{background:var(--good)} .bar i.warn{background:var(--warn)} .bar i.bad{background:var(--bad)}
+.bar .tick{position:absolute;top:-3px;width:1px;height:14px;background:var(--muted);opacity:.45}
+details{margin-top:6px}
+summary{cursor:pointer;color:var(--accent);font-size:.84rem;font-weight:500}
+.kv{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:2px 14px;margin:8px 0 0;font-size:.84rem}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-family:var(--mono);overflow-wrap:anywhere}
+.note{margin:6px 0 0;font-size:.84rem;color:var(--warn)}
+.change{margin:6px 0 0;font-size:.86rem}
+table.compare{width:auto;min-width:300px;margin-top:8px;font-size:.82rem}
+table.compare th,table.compare td{padding:4px 10px}
+table.compare td.n{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.risk{display:grid;grid-template-columns:minmax(0,1fr) 200px;gap:16px;padding:12px 16px;border-top:1px solid var(--line);align-items:center}
+.risk:first-child{border-top:0}
+.risk p{margin:2px 0 0;font-size:.84rem;color:var(--muted)}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--ink);padding:7px 12px;font:inherit;font-size:.86rem;cursor:pointer;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--surface);font-weight:600}
+input[type="search"]{font:inherit;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);min-width:220px}
+.btn{font:inherit;font-size:.86rem;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);cursor:pointer}
+.btn:disabled{opacity:.45;cursor:default}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th,td{text-align:left;padding:8px 10px;border-top:1px solid var(--line);vertical-align:top}
+thead th{border-top:0;background:var(--sunk);font-weight:600;position:sticky;top:0}
+th .tech{display:block;font-weight:400;font-size:.74rem;color:var(--muted)}
+th button{all:unset;cursor:pointer;display:block}
+th button:focus-visible{outline:3px solid var(--accent)}
+td.empty{color:var(--muted)}
+.token{font:500 .8rem var(--mono);background:var(--token-soft);color:var(--token);border:0;border-radius:4px;padding:1px 5px;cursor:pointer}
+.ph{font:500 .8rem var(--mono);background:var(--ph-soft);color:var(--ph);border-radius:4px;padding:0 4px}
+.banner{padding:10px 14px;border-radius:8px;margin-bottom:10px;font-size:.9rem}
+.banner.held{background:var(--warn-soft);color:var(--warn)} .banner.none{background:var(--bad-soft);color:var(--bad)} .banner.info{background:var(--accent-soft);color:var(--ink)}
+.filter-chip{display:inline-flex;gap:6px;align-items:center;background:var(--token-soft);color:var(--token);padding:4px 10px;border-radius:999px;font-size:.84rem}
+.filter-chip button{all:unset;cursor:pointer;font-weight:700}
+.attempts{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px}
+.attempt{padding:14px 16px}
+.attempt ul{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
+.attempt li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px;font-size:.86rem}
+.mark{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:.72rem;font-weight:700}
+.mark.pass{background:var(--good-soft);color:var(--good)} .mark.fail{background:var(--bad-soft);color:var(--bad)} .mark.info{background:var(--sunk);color:var(--muted)}
+.attempt li span.d{color:var(--muted)}
+.settings{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.pager{display:flex;align-items:center;gap:8px;justify-content:flex-end;margin-top:10px;font-size:.86rem;color:var(--muted)}
+footer{padding-top:30px;padding-bottom:40px;font-size:.82rem;color:var(--muted)}
+footer p{margin:0 0 6px;max-width:95ch}
+@media (max-width:720px){
+  .task,.risk{grid-template-columns:minmax(0,1fr)}
+  input[type="search"]{min-width:0;flex:1}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header class="top wrap" id="top"></header>
+<nav class="tabs" aria-label="Sections"><div class="wrap" id="nav"></div></nav>
+<main class="wrap">
+  <section id="overview" aria-labelledby="h-overview"></section>
+  <section id="usefulness" aria-labelledby="h-usefulness"></section>
+  <section id="risks" aria-labelledby="h-risks"></section>
+  <section id="fields" aria-labelledby="h-fields"></section>
+  <section id="gate" aria-labelledby="h-gate"></section>
+  <section id="records" aria-labelledby="h-records"></section>
+</main>
+<footer class="wrap" id="foot"></footer>
+<script type="application/json" id="data">/*__DASHBOARD_DATA__*/null</script>
+<script>
+(function(){
+"use strict";
+var D = JSON.parse(document.getElementById("data").textContent);
+var $ = function(id){ return document.getElementById(id); };
+function h(tag, attrs, kids){
+  var el = document.createElement(tag);
+  Object.keys(attrs || {}).forEach(function(k){
+    var v = attrs[k];
+    if (v === null || v === undefined || v === false) return;
+    if (k === "class") el.className = v; else if (k === "text") el.textContent = v;
+    else if (k.slice(0,2) === "on") el.addEventListener(k.slice(2), v); else el.setAttribute(k, v === true ? "" : v);
+  });
+  (kids || []).forEach(function(k){ if (k !== null && k !== undefined) el.appendChild(typeof k === "string" ? document.createTextNode(k) : k); });
+  return el;
+}
+var fmt2 = function(v){ return v === null || v === undefined ? "–" : Number(v).toFixed(2); };
+var pct = function(v){ return (100 * v).toFixed(1) + "%"; };
+var STATUS = {release:"Released", review:"Held for a person's review", block:"Blocked"};
+var TRUST = {controlled_research:"controlled research", contractual:"contract", public:"public", internal:"internal"};
+var LEVELS = {exact:"exact values", minute:"to the minute", hour_stamp:"to the hour", day:"to the day", week:"to the week", month:"to the month", year:"to the year",
+  hour_of_day:"hour of day only, date dropped", age_5:"5-year age bands", age_10:"10-year age bands", age_20:"20-year age bands", area_all:"every area kept",
+  area_top_16:"16 largest areas, others merged", area_top_8:"8 largest areas, others merged", postcode_3:"first 3 postcode digits", postcode_2:"first 2 postcode digits",
+  rare_kept:"every category kept", rare_200:"categories under 200 rows merged", rare_binary:"largest category versus the rest", round_3:"3 decimals", round_2:"2 decimals", round_tens:"rounded to tens"};
+var SUBTYPE = {BIRTH_DATE:"Birth date", AGE:"Age", MUNICIPALITY:"Area", LOCATION_NAME:"Place", TIMESTAMP:"Times", DATE:"Dates", POSTCODE:"Postcode", CATEGORY:"Categories", GPS_COORDINATE:"Coordinates"};
+var sc = D.scenario || {};
+
+function top(){
+  var lede = sc.recipient ? "For " + sc.recipient + ". Purpose: " + (sc.purpose || "not stated").replace(/\.+$/, "") + "." : "Data outside the challenge package, protected for a " + (TRUST[sc.trust_level] || sc.trust_level) + " recipient.";
+  $("top").append(
+    h("div", {class:"meta"}, [h("span", {class:"mono", text:sc.id || ""}), h("span", {text:"Trust level: " + (TRUST[sc.trust_level] || sc.trust_level || "")}),
+      sc.k_required ? h("span", {text:"Privacy bar: at least " + sc.k_required + " matching rows"}) : h("span", {text:"No look-alike bar stated"}),
+      h("span", {text:"Generated " + (D.generated_at || "").replace("T", " ").replace("+00:00", " UTC")})]),
+    h("h1", {text:"Release evidence: " + (sc.id || D.run)}),
+    h("span", {class:"verdict " + D.status, text:STATUS[D.status] || D.status}),
+    h("p", {class:"lede", text:lede}));
+}
+
+function nav(){
+  [["overview","Overview"],["usefulness","Usefulness"],["risks","Privacy risks"],["fields","Fields"],["gate","Gate"],["records","Records"]].forEach(function(p){
+    $("nav").append(h("a", {href:"#" + p[0], "data-for":p[0], text:p[1]}));
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll("nav.tabs a"));
+  var seen = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if (e.isIntersecting) links.forEach(function(a){ a.classList.toggle("on", a.getAttribute("data-for") === e.target.id); }); });
+  }, {rootMargin:"-45% 0px -50% 0px"});
+  ["overview","usefulness","risks","fields","gate","records"].forEach(function(id){ seen.observe($(id)); });
+}
+
+function head(id, title, lede, extra){
+  return [h("div", {class:"section-head"}, [h("h2", {id:"h-" + id, text:title}), extra || null]), lede ? h("p", {class:"section-lede", text:lede}) : null];
+}
+
+function overview(){
+  var tiles = (D.headline || []).map(function(t){
+    var value = t.format === "percent" ? pct(t.value) : t.format === "count" ? h("span", {}, [String(t.value), h("small", {text:" of " + t.total})]) : fmt2(t.value);
+    return h("div", {class:"tile"}, [h("div", {class:"label", text:t.label}), h("div", {class:"value"}, [value]), h("p", {text:t.meaning})]);
+  });
+  var kids = head("overview", "Overview", D.composite !== null && D.composite !== undefined ? "Combined score " + fmt2(D.composite) + ". " + D.composite_meaning : "");
+  kids.push(h("div", {class:"tiles"}, tiles));
+  if ((D.remaining || []).length) kids.push(h("div", {class:"callout"}, [h("h3", {text:"Risks that remain"}), h("ul", {}, D.remaining.map(function(r){ return h("li", {text:r}); }))]));
+  $("overview").append.apply($("overview"), kids.filter(Boolean));
+}
+
+function scoreBar(score, tone){
+  var bar = h("div", {class:"bar", role:"img", "aria-label":"Score " + fmt2(score) + " out of 1"}, [h("i", {class:tone, style:"width:" + Math.max(0, Math.min(1, score || 0)) * 100 + "%"})]);
+  [0.5, 0.8, 0.95].forEach(function(t){ bar.append(h("span", {class:"tick", style:"left:" + t * 100 + "%"})); });
+  return bar;
+}
+
+function compareTable(rows){
+  if (!rows || !rows.length) return null;
+  var show = function(v){ return v === null || v === undefined ? "–" : typeof v === "number" ? String(v) : v; };
+  return h("table", {class:"compare"}, [h("thead", {}, [h("tr", {}, [h("th", {scope:"col", text:""}), h("th", {scope:"col", text:"Original"}), h("th", {scope:"col", text:"Protected"})])]),
+    h("tbody", {}, rows.map(function(r){ return h("tr", {}, [h("td", {text:r.label}), h("td", {class:"n", text:show(r.before)}), h("td", {class:"n", text:show(r.after)})]); }))]);
+}
+
+function usefulness(){
+  var tasks = D.tasks || [];
+  var kids = head("usefulness", "Usefulness", "Each row is a question this recipient must still be able to answer. The engine asks it of the original and the protected data and shows both answers, then scores how closely they match. Marks on each bar sit at 0.50, 0.80 and 0.95.");
+  if (!tasks.length) { kids.push(h("p", {class:"muted", text:"This run had no required questions, so usefulness wasn't measured. That happens for data outside the challenge package."})); $("usefulness").append.apply($("usefulness"), kids.filter(Boolean)); return; }
+  kids.push(h("div", {class:"card"}, tasks.map(function(t){
+    var detail = h("details", {}, [h("summary", {text:"How it's measured"}),
+      h("dl", {class:"kv"}, [h("dt", {text:"Needs"}), h("dd", {text:t.needs || "–"}), h("dt", {text:"Metric"}), h("dd", {text:t.metric || "–"})]
+        .concat([].concat.apply([], (t.detail || []).map(function(d){ return [h("dt", {text:d.name}), h("dd", {text:typeof d.value === "number" ? String(Math.round(d.value * 10000) / 10000) : d.value})]; }))))]);
+    return h("div", {class:"task"}, [
+      h("div", {}, [h("div", {class:"q"}, [h("span", {class:"chip", text:t.id}), t.question]), h("p", {class:"how", text:t.scoring}),
+        t.change ? h("p", {class:"change", text:t.change}) : null, compareTable(t.comparison), t.note ? h("p", {class:"note", text:t.note}) : null, detail]),
+      h("div", {class:"scorebox"}, [h("div", {class:"scoreline"}, [h("b", {text:t.score === null ? "–" : fmt2(t.score)}), h("span", {class:"pill " + t.band.tone, text:t.band.word})]),
+        scoreBar(t.score, t.band.tone), h("span", {class:"muted", style:"font-size:.8rem", text:t.band.meaning})])]);
+  })));
+  $("usefulness").append.apply($("usefulness"), kids.filter(Boolean));
+}
+
+function attackerCard(){
+  var rows = D.attacker || [];
+  if (!rows.length) return null;
+  var p = function(v){ return v === null || v === undefined ? "–" : Math.round(v * 1000) / 10 + "%"; };
+  var tone = function(v){ return v === 0 ? "good" : v < 0.05 ? "warn" : "bad"; };
+  return h("div", {class:"card", style:"padding:14px 16px;margin-bottom:6px"}, [
+    h("h3", {text:"Our stronger attacker"}),
+    h("p", {class:"section-lede", style:"margin:4px 0 10px", text:"The organisers' hidden attackers aren't available, so the engine runs its own. It picks people known to be in the release and assumes the attacker knows their clue columns exactly. It then adds facts an insider could know, with numbers known only roughly. Each figure is the share of those people matching exactly one released row."}),
+    h("div", {class:"scroll"}, [h("table", {}, [h("thead", {}, [h("tr", {}, ["Table","Clues known","Clues only","Plus the most revealing fact","Plus every kept fact"].map(function(c){ return h("th", {scope:"col", text:c}); }))]),
+      h("tbody", {}, rows.map(function(r){
+        return h("tr", {}, [h("td", {class:"mono", text:r.table}), h("td", {text:r.clues.join(", ")}),
+          h("td", {}, [h("span", {class:"pill " + tone(r.clues_only), text:p(r.clues_only)})]),
+          h("td", {}, r.worst_fact ? [h("span", {class:"pill " + tone(r.worst_fact_value), text:p(r.worst_fact_value)}), " " + r.worst_fact] : ["–"]),
+          h("td", {}, [h("span", {class:"pill " + tone(r.all_facts), text:p(r.all_facts)})])]);
+      }))])])]);
+}
+
+function risks(){
+  var list = D.risks || [];
+  var kids = head("risks", "Privacy risks", "Each risk runs from 0, none found, to 1, every record exposed. The privacy score counts the worst risk as heavily as the average of the rest, because one open door is enough for an attacker.");
+  kids.push(attackerCard());
+  if (!list.length) { kids.push(h("p", {class:"muted", text:"No scorecard was run for this release, so only the engine's own gate checks apply. See the Gate section."})); $("risks").append.apply($("risks"), kids.filter(Boolean)); return; }
+  kids.push(h("h3", {style:"margin:18px 0 8px", text:"Scorecard risks, from the public attackers"}));
+  kids.push(h("div", {class:"card"}, list.map(function(r){
+    var tone = r.value === 0 ? "good" : r.value < 0.05 ? "warn" : "bad";
+    return h("div", {class:"risk"}, [h("div", {}, [h("div", {class:"q"}, [h("span", {class:"chip", text:r.table}), h("b", {text:r.name})]), h("p", {text:r.meaning})]),
+      h("div", {class:"scorebox"}, [h("div", {class:"scoreline"}, [h("b", {text:r.value === 0 ? "0" : r.value < 0.001 ? "<0.001" : r.value.toFixed(3)}),
+        h("span", {class:"pill " + tone, text:r.value === 0 ? "None found" : r.value < 0.05 ? "Low" : "High"})]),
+        scoreBar(r.value, tone)])]);
+  })));
+  $("risks").append.apply($("risks"), kids.filter(Boolean));
+}
+
+function fields(){
+  var all = D.fields || [];
+  var kept = all.filter(function(f){ return f.pet !== "remove"; });
+  var state = {mode:"kept", query:""};
+  var body = h("tbody");
+  var buttons = {};
+  function draw(){
+    body.textContent = "";
+    var rows = all.filter(function(f){
+      var inMode = state.mode === "all" || (state.mode === "kept" ? f.pet !== "remove" : state.mode === "removed" ? f.pet === "remove" : f.needs_review);
+      return inMode && (!state.query || (f.field + " " + f.role + " " + f.pet + " " + f.why).toLowerCase().indexOf(state.query) > -1);
+    });
+    rows.forEach(function(f){
+      body.append(h("tr", {}, [h("td", {class:"mono", text:f.field}),
+        h("td", {}, [f.role ? f.role.replace(/_/g, " ") : "–", f.confidence !== null && f.confidence !== undefined ? h("div", {class:"muted", style:"font-size:.78rem", text:Math.round(f.confidence * 100) + "% sure" + (f.needs_review ? ", needs review" : "")}) : null]),
+        h("td", {}, [h("span", {class:"pill " + (f.pet === "remove" ? "neutral" : "good"), text:f.pet.replace(/_/g, " ")})]),
+        h("td", {text:f.why}), h("td", {class:"mono", text:(f.needed_by || []).join(", ") || "–"})]));
+    });
+    if (!rows.length) body.append(h("tr", {}, [h("td", {colspan:5, class:"empty", text:"No fields match."})]));
+    Object.keys(buttons).forEach(function(k){ buttons[k].setAttribute("aria-pressed", String(k === state.mode)); });
+  }
+  var seg = h("div", {class:"seg", role:"group", "aria-label":"Show fields"});
+  [["kept","Kept (" + kept.length + ")"],["removed","Removed (" + (all.length - kept.length) + ")"],["review","Needs review (" + all.filter(function(f){ return f.needs_review; }).length + ")"],["all","All (" + all.length + ")"]].forEach(function(m){
+    buttons[m[0]] = h("button", {type:"button", text:m[1], onclick:function(){ state.mode = m[0]; draw(); }});
+    seg.append(buttons[m[0]]);
+  });
+  var search = h("input", {type:"search", id:"field-search", placeholder:"Search fields", "aria-label":"Search fields", oninput:function(e){ state.query = e.target.value.toLowerCase(); draw(); }});
+  var kids = head("fields", "Fields", "What Detect saw in each column, the technique Select chose, and why. Anything no required question uses is removed, whatever it contains.");
+  var levels = Object.keys(D.tuning || {});
+  if (levels.length) kids.push(h("div", {class:"settings"}, [h("span", {class:"muted", text:"Settings Tune chose:"})].concat(levels.map(function(k){
+    return h("span", {class:"pill neutral", text:(SUBTYPE[k] || k) + ": " + (LEVELS[D.tuning[k]] || D.tuning[k])}); }))));
+  kids.push(h("div", {class:"toolbar"}, [seg, search]));
+  kids.push(h("div", {class:"card scroll"}, [h("table", {}, [h("thead", {}, [h("tr", {}, ["Field","Detected as","Technique","Why","Needed by"].map(function(c){ return h("th", {scope:"col", text:c}); }))]), body])]));
+  $("fields").append.apply($("fields"), kids.filter(Boolean));
+  draw();
+}
+
+function gate(){
+  var attempts = D.attempts || [];
+  var kids = head("gate", "Gate", "Every check runs on every attempt, and the worst result decides. A row that stands out sends the release back for another attempt.");
+  kids.push(h("div", {class:"attempts"}, attempts.map(function(a){
+    return h("div", {class:"card attempt"}, [h("div", {class:"scoreline"}, [h("h3", {text:"Attempt " + a.attempt}), h("span", {class:"verdict " + a.status, text:STATUS[a.status] || a.status})]),
+      h("ul", {}, a.checks.map(function(c){
+        var kind = c.severity === "info" ? "info" : c.passed ? "pass" : "fail";
+        return h("li", {}, [h("span", {class:"mark " + kind, "aria-label":kind, text:kind === "pass" ? "✓" : kind === "fail" ? "✕" : "i"}),
+          h("span", {}, [h("b", {text:c.name + ". "}), h("span", {class:"d", text:c.detail})])]);
+      }))]);
+  })));
+  $("gate").append.apply($("gate"), kids.filter(Boolean));
+}
+
+var TOKEN = /^pt[0-9a-f]{16}$/;
+var PLACEHOLDER = /\[[A-Z_]+_\d+\]/g;
+function cell(value, onToken){
+  if (value === null || value === undefined || value === "") return h("td", {class:"empty", text:"–"});
+  var text = String(value);
+  if (TOKEN.test(text)) return h("td", {}, [h("button", {type:"button", class:"token", title:"Show every row with this code", text:text, onclick:function(){ onToken(text); }})]);
+  var td = h("td"), last = 0, m;
+  PLACEHOLDER.lastIndex = 0;
+  while ((m = PLACEHOLDER.exec(text))) { td.append(text.slice(last, m.index), h("span", {class:"ph", text:m[0]})); last = m.index + m[0].length; }
+  td.append(text.slice(last));
+  return td;
+}
+
+function records(){
+  var R = D.records || {tables:[]};
+  var kids = head("records", "Protected records", "These are the rows the recipient receives. Codes that start with pt are keyed pseudonyms: click one to see every row for the same person or record. Bracketed labels mark redacted text.");
+  if (R.status === "none" || !R.tables.length) {
+    kids.push(h("div", {class:"banner none", text:"Nothing was released. The gate blocked this run, so there are no protected records to show."}));
+    $("records").append.apply($("records"), kids.filter(Boolean)); return;
+  }
+  if (R.status === "held") kids.push(h("div", {class:"banner held", text:"Held for review. These rows are staged and have not been released."}));
+  var state = {table:0, query:"", token:"", page:0, size:25, sort:-1, dir:1};
+  var seg = h("div", {class:"seg", role:"group", "aria-label":"Choose table"});
+  var tabButtons = R.tables.map(function(t, i){
+    var b = h("button", {type:"button", text:t.name + " (" + t.total.toLocaleString() + ")", onclick:function(){ state.table = i; state.page = 0; state.sort = -1; state.token = ""; draw(); }});
+    seg.append(b); return b;
+  });
+  var search = h("input", {type:"search", placeholder:"Search these rows", "aria-label":"Search protected rows", oninput:function(e){ state.query = e.target.value.toLowerCase(); state.page = 0; draw(); }});
+  var chipSlot = h("span");
+  var info = h("div", {class:"banner info"});
+  var table = h("table");
+  var pagerText = h("span");
+  var prev = h("button", {type:"button", class:"btn", text:"Previous", onclick:function(){ state.page--; draw(); }});
+  var next = h("button", {type:"button", class:"btn", text:"Next", onclick:function(){ state.page++; draw(); }});
+  function setToken(t){ state.token = t; state.page = 0; draw(); }
+  function draw(){
+    var t = R.tables[state.table];
+    tabButtons.forEach(function(b, i){ b.setAttribute("aria-pressed", String(i === state.table)); });
+    info.textContent = t.shown < t.total ? "Showing a random sample of " + t.shown.toLocaleString() + " of " + t.total.toLocaleString() + " rows. The full table is in the run's " + (R.status === "held" ? "staged" : "release") + " folder." : "Showing all " + t.total.toLocaleString() + " rows.";
+    var rows = t.rows.filter(function(r){
+      return (!state.token || r.indexOf(state.token) > -1) && (!state.query || r.join(" ").toLowerCase().indexOf(state.query) > -1);
+    });
+    if (state.sort > -1) {
+      rows = rows.slice().sort(function(a, b){
+        var x = a[state.sort], y = b[state.sort], nx = parseFloat(x), ny = parseFloat(y);
+        var cmp = !isNaN(nx) && !isNaN(ny) && String(nx) !== "NaN" ? nx - ny : String(x).localeCompare(String(y));
+        return cmp * state.dir;
+      });
+    }
+    var pages = Math.max(1, Math.ceil(rows.length / state.size));
+    state.page = Math.min(Math.max(0, state.page), pages - 1);
+    var slice = rows.slice(state.page * state.size, (state.page + 1) * state.size);
+    table.textContent = "";
+    table.append(h("thead", {}, [h("tr", {}, t.columns.map(function(c, i){
+      var arrow = state.sort === i ? (state.dir === 1 ? " ↑" : " ↓") : "";
+      return h("th", {scope:"col", "aria-sort":state.sort === i ? (state.dir === 1 ? "ascending" : "descending") : "none"}, [h("button", {type:"button", onclick:function(){
+        state.dir = state.sort === i ? -state.dir : 1; state.sort = i; draw(); }}, [c.name + arrow, c.technique ? h("span", {class:"tech", text:c.technique + (c.source && c.source.split(".")[1] !== c.name ? " of " + c.source.split(".")[1] : "")}) : null])]);
+    }))]), h("tbody", {}, slice.length ? slice.map(function(r){ return h("tr", {}, r.map(function(v){ return cell(v, setToken); })); })
+      : [h("tr", {}, [h("td", {colspan:t.columns.length, class:"empty", text:"No rows match."})])]));
+    chipSlot.textContent = "";
+    if (state.token) chipSlot.append(h("span", {class:"filter-chip"}, ["Rows with " + state.token, h("button", {type:"button", "aria-label":"Clear code filter", text:"✕", onclick:function(){ setToken(""); }})]));
+    pagerText.textContent = rows.length ? "Rows " + (state.page * state.size + 1).toLocaleString() + "–" + Math.min(rows.length, (state.page + 1) * state.size).toLocaleString() + " of " + rows.length.toLocaleString() : "0 rows";
+    prev.disabled = state.page === 0; next.disabled = state.page >= pages - 1;
+  }
+  kids.push(h("div", {class:"toolbar"}, [seg, search, chipSlot]), info, h("div", {class:"card scroll"}, [table]), h("div", {class:"pager"}, [pagerText, prev, next]));
+  $("records").append.apply($("records"), kids.filter(Boolean));
+  draw();
+}
+
+function foot(){
+  $("foot").append(h("p", {text:"Scores come from pets-eval, the challenge's self-assessment toolkit. They are evidence for this release, not official judging."}),
+    h("p", {text:"Engine " + D.engine + ", run folder " + D.run + ". Row maps and keys stay in the run's private store and are never part of this page."}));
+}
+
+top(); nav(); overview(); usefulness(); risks(); fields(); gate(); records(); foot();
+})();
+</script>
+</body>
+</html>

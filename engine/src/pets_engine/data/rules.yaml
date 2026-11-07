@@ -1,0 +1,50 @@
+# The readable policy. Select applies it to every column a required task needs; everything else is removed.
+needed_columns:
+  direct_identifier: keyed_pseudonym
+  technical_identifier: keyed_pseudonym
+  record_key: keep
+  quasi_identifier: generalise
+  sensitive_attribute: keep
+  non_sensitive: keep
+  free_text: redact_text
+
+subtype_overrides:
+  IP_ADDRESS: prefix_ip
+  DIAGNOSIS_CODE: shorten_code
+  RECORD_ID: keep
+  URL: keep
+  USER_AGENT: keep
+
+# Dials Tune may turn. Listed from mildest to coarsest.
+ladders:
+  BIRTH_DATE: [age_5, age_10, age_20]
+  AGE: [age_5, age_10, age_20]
+  POSTCODE: [postcode_3, postcode_2]
+  MUNICIPALITY: [area_all, area_top_16, area_top_8]
+  LOCATION_NAME: [area_all, area_top_16, area_top_8]
+  TIMESTAMP: [exact, minute, hour_stamp, day, week, month, hour_of_day]
+  DATE: [exact, day, week, month, year]
+  GPS_COORDINATE: [round_3, round_2]
+  CATEGORY: [rare_kept, rare_200, rare_binary]
+  LANGUAGE: [rare_kept, rare_200]
+  OCCUPATION: [rare_kept, rare_200]
+  ORG_NAME: [rare_kept, rare_200]
+  EDUCATION_DATA: [rare_kept, rare_200]
+  FINANCIAL_DATA: [exact, round_tens]
+  SEX: [exact]
+  DEFAULT: [rare_kept, rare_200]
+
+# Decisions a scenario states in words that task tests can't discover.
+scenario_overrides:
+  HEALTH-S1:
+    also_keep: [ed_visits.patient_hetu]
+    reason: "The scenario asks for a consistent patient key for revisit analysis."
+  CS-S1:
+    fixed_levels: {TIMESTAMP: hour_stamp}
+    reason: "The scenario asks for timestamps rounded to the hour."
+
+gate:
+  max_reidentification: 0.02
+  max_retained_identifiers: 0.0
+  min_task_score: 0.5
+  max_suppressed_rows: 0.25
