@@ -102,6 +102,7 @@ describe('the release studio', () => {
     await waitFor(() => expect(router.state.location.pathname).toBe('/release/recipient'))
 
     // Continue waits for a recipient, and says why
+    console.log('DEBUG', JSON.stringify(screen.queryAllByRole('button', { hidden: true }).map((b) => b.textContent)), JSON.stringify(screen.queryAllByRole('heading', { hidden: true }).map((b) => b.textContent)))
     const next = screen.getByRole('button', { name: /continue to columns/i })
     expect(next).toBeDisabled()
     expect(screen.getByText(/name the recipient or choose a scenario/i)).toBeInTheDocument()
