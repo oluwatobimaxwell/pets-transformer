@@ -110,7 +110,8 @@ describe('the release studio', () => {
 
     await user.click(screen.getByRole('tab', { name: /use a challenge scenario/i }))
     // The scenario cards carry the trust level as a coloured tag
-    expect(await screen.findByText('Controlled research environment')).toBeInTheDocument()
+    const radio = await screen.findByRole('radio', { name: /HEALTH-S1/ })
+    expect(radio).toHaveTextContent('Controlled research environment')
     await user.click(await screen.findByRole('radio', { name: /HEALTH-S1/ }))
     expect(next).toBeEnabled()
     await user.click(next)
