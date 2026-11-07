@@ -5,10 +5,16 @@ import { buildPath, Path } from '@/router/paths'
 import type { ReleaseDraft } from '../types'
 import { filledQuestion } from '../utils/empty-question'
 
-/** Sends the draft to the release gate, then opens the run's page. */
-export function useStartRun() {
+/** Sends the draft to the release gate, then opens the run's page. `onStarted` clears the draft for the next release. */
+export function useStartRun(onStarted?: () => void) {
   const navigate = useNavigate()
-  const mutation = useApiMutation({ ...startRunMutation(), onSuccess: (run) => navigate(buildPath(Path.Run, { runId: run.id })) })
+  const mutation = useApiMutation({
+    ...startRunMutation(),
+    onSuccess: (run) => {
+      navigate(buildPath(Path.Run, { runId: run.id }))
+      onStarted?.()
+    },
+  })
   const start = (draft: ReleaseDraft) => {
     if (!draft.dataset) return
     const custom = draft.scenarioId ? undefined : { ...draft.custom, questions: (draft.custom.questions ?? []).map(filledQuestion) }

@@ -1,19 +1,23 @@
 import { Calculator, Filter, Flag, Play, ScanSearch, ShieldCheck, Shuffle, SlidersHorizontal, type LucideIcon } from 'lucide-react'
 
-/** How each stage of a run reads in the progress log. */
-const STAGE_ICONS: Record<string, LucideIcon> = {
-  start: Play,
-  detect: ScanSearch,
-  select: Filter,
-  tune: SlidersHorizontal,
-  transform: Shuffle,
-  verify: ShieldCheck,
-  answers: Calculator,
-  done: Flag,
+/** How each stage of a run reads in the progress log: its icon and its own tag colour. */
+const STAGE_WORDS: Record<string, { icon: LucideIcon; palette: string }> = {
+  start: { icon: Play, palette: 'gray' },
+  detect: { icon: ScanSearch, palette: 'blue' },
+  select: { icon: Filter, palette: 'purple' },
+  tune: { icon: SlidersHorizontal, palette: 'yellow' },
+  transform: { icon: Shuffle, palette: 'cyan' },
+  verify: { icon: ShieldCheck, palette: 'brand' },
+  answers: { icon: Calculator, palette: 'teal' },
+  done: { icon: Flag, palette: 'accent' },
 }
 
 export function stageIcon(stage: string): LucideIcon {
-  return STAGE_ICONS[stage] ?? Play
+  return STAGE_WORDS[stage]?.icon ?? Play
+}
+
+export function stagePalette(stage: string): string {
+  return STAGE_WORDS[stage]?.palette ?? 'gray'
 }
 
 /** What the gate does, in order, for the last look before a run. */
