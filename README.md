@@ -126,3 +126,4 @@ generated at the event with blacksmith-cli, a pre-existing open-source tool, the
 The hash check, the birth-date and trade-union rules, differentially private answers, and blanking one clue instead of deleting a row
 follow ideas from ProofPET, a teammate's prototype built at the same event.
 The engine depends on the challenge's `pets-eval` toolkit, which isn't part of this repository.
+Download the project presentation:https://m365.cloud.microsoft/chat/conversation/PETs-Transformer-Project.pptx 
