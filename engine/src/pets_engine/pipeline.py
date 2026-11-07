@@ -7,6 +7,8 @@ import pandas as pd
 
 from pets_eval import io
 
+from .answers.publish import publish_answers
+from .answers.workload import public_output, workload_path
 from .detect.detector import ColumnDetector
 from .detect.labelling import apply_review, label_tables
 from .domain.check import BLOCK, Check
@@ -117,8 +119,8 @@ def _row_counts(release: dict, masks: dict) -> dict:
 
 
 def _finish(paths: RunPaths, config: RunConfig, labels: list, plan: list, tuned, verdicts: list, report, rows: dict, attack: dict | None = None,
-            results: list | None = None) -> RunResult:
-    manifest = build_manifest(config, labels, plan, tuned, verdicts, report, rows, attack or {}, results or [])
+            results: list | None = None, answers: dict | None = None) -> RunResult:
+    manifest = build_manifest(config, labels, plan, tuned, verdicts, report, rows, attack or {}, results or [], answers)
     write_manifest(manifest, paths.evidence)
     write_summary(manifest, paths.evidence)
     status = manifest["status"]
@@ -129,12 +131,14 @@ def _finish(paths: RunPaths, config: RunConfig, labels: list, plan: list, tuned,
     elif paths.staged.exists() and status == "block":
         shutil.rmtree(paths.staged)
     write_dashboard(paths.root)
-    return RunResult(status, paths.root, verdicts, {"scores": manifest["scores"], "rows": rows, "tasks": manifest["tasks"], "top_risks": manifest["top_risks"]})
+    return RunResult(status, paths.root, verdicts, {"scores": manifest["scores"], "rows": rows, "tasks": manifest["tasks"], "top_risks": manifest["top_risks"],
+                                                    "answers": answers})
 
 
 def _public_block(config: RunConfig) -> Verdict:
     return Verdict(1, [Check("Recipient may receive row-level data", False, BLOCK,
-                             f"{config.scenario.id} is a public release, which must be anonymous. This engine makes row-level releases and doesn't build aggregates yet.")])
+                             f"{config.scenario.id} is a public release, which must be anonymous, so it gets answers, not rows. "
+                             "It has no question list to answer: add `workload:` to the scenario file.")])
 
 
 def run_release(config: RunConfig, on_event=_quiet) -> RunResult:
@@ -144,8 +148,13 @@ def run_release(config: RunConfig, on_event=_quiet) -> RunResult:
     on_event("detect", "Reading and profiling columns")
     text_tables = read_text_tables(config.data_dir)
     labels = apply_review(label_tables(text_tables, ColumnDetector.load()), config.review_file)
-    if config.scenario.is_public:
+    output = public_output(config.scenario, config.package_root)
+    if output == "blocked":
         return _finish(paths, config, labels, [], None, [_public_block(config)], None, {})
+    if output == "answers":
+        workload = workload_path(config.scenario, config.package_root)
+        verdict, results, answers = publish_answers(config, labels, workload, paths.staged, on_event)
+        return _finish(paths, config, labels, [], None, [verdict], None, {}, results=results, answers=answers)
     tables = io.load_tables(config.data_dir)
     on_event("select", "Finding what the required tasks need")
     tasks = required_tasks(config.scenario) if config.scenario.has_tasks else []

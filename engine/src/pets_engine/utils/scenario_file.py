@@ -42,6 +42,8 @@ def load_scenario_file(path: Path, dataset: str) -> Scenario:
     if trust not in TRUST_LEVELS:
         raise ValueError(f"trust_level must be one of: {', '.join(TRUST_LEVELS)}.")
     questions = tuple(_check_question(n, q) for n, q in enumerate(raw.get("questions") or [], start=1))
+    workload = str((Path(path).parent / raw["workload"]).resolve()) if raw.get("workload") else ""
     return Scenario(id=str(raw.get("id", f"CUSTOM-{trust}")), dataset=str(raw.get("dataset", dataset)), trust_level=trust,
                     recipient=str(raw.get("recipient", "")), purpose=str(raw.get("purpose", "")), questions=questions,
-                    task_ids=tuple(q["id"] for q in questions), k=raw.get("k"), text_recall=raw.get("text_recall"))
+                    task_ids=tuple(q["id"] for q in questions), k=raw.get("k"), text_recall=raw.get("text_recall"),
+                    epsilon=raw.get("epsilon"), workload=workload)

@@ -48,3 +48,11 @@ gate:
   max_retained_identifiers: 0.0
   min_task_score: 0.5
   max_suppressed_rows: 0.25
+
+# Public releases: noisy answers to a question list instead of rows (differential privacy).
+answers:
+  epsilon: 1.0           # privacy budget per release, when the scenario states none
+  contribution_bound: 4  # the most records one person may add to the answers
+
+# Subtypes that pick out one person across records, in order of preference: the unit for the repeat-record note and for answers.
+person_subtypes: [NATIONAL_ID, PATIENT_ID, CUSTOMER_ID, STUDENT_ID, EMPLOYEE_ID, CARD_ID, ACCOUNT_ID, EMAIL]

@@ -1,9 +1,13 @@
 """Rules for values strong enough to decide a column without the model, each with a reason a person can read."""
 from __future__ import annotations
 
+from datetime import date
+
 from ..domain.column_profile import ColumnProfile
 
 STRONG = 0.85
+BIRTH_SPREAD_YEARS = 25  # a population's birth years span decades
+ADULT_YEARS = 18  # and most were born at least this long ago
 ID_ROLE, TECH_ROLE = "direct_identifier", "technical_identifier"
 _RULES = [  # pattern, role, subtype, description
     ("national_id", ID_ROLE, "NATIONAL_ID", "Finnish ID number format"),
@@ -19,12 +23,20 @@ _RULES = [  # pattern, role, subtype, description
 ]
 
 
+def _birth_dates(profile: ColumnProfile):
+    share = profile.pattern_shares.get("date", 0.0)
+    spread = profile.year_high - profile.year_low
+    if share >= STRONG and spread >= BIRTH_SPREAD_YEARS and 0 < profile.year_mid <= date.today().year - ADULT_YEARS:
+        return "quasi_identifier", "BIRTH_DATE", f"{share:.0%} of values are dates from {profile.year_low} to {profile.year_high}, the spread of birth dates"
+    return None
+
+
 def strong_evidence(profile: ColumnProfile):
     for pattern, role, subtype, description in _RULES:
         share = profile.pattern_shares.get(pattern, 0.0)
         if share >= STRONG:
             return role, subtype, f"{share:.0%} of values match: {description}"
-    return None
+    return _birth_dates(profile)
 
 
 def describe_evidence(profile: ColumnProfile) -> list:

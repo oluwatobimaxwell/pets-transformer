@@ -37,3 +37,32 @@ def test_decimal_amounts_are_not_hostnames_and_note_type_is_not_free_text():
     assert not PATTERNS["hostname"]("49.85") and PATTERNS["hostname"]("mail.meridian.example")
     assert name_hint("clinical_notes", "note_type") is None or name_hint("clinical_notes", "note_type").role != "free_text"
     assert name_hint("conversations", "agent_note").role == "free_text"
+
+
+def test_birth_dates_in_mixed_formats_are_found_from_their_values():
+    dates = pd.Series(["15.3.1987", "02/11/64", "1999-07-30", "4.12.1952", "28.02.2001", "19/06/78"] * 20)
+    role, subtype, reason = strong_evidence(profile_column("export", "c06", dates))
+    assert (role, subtype) == ("quasi_identifier", "BIRTH_DATE") and "1952" in reason
+
+
+def test_recent_event_dates_are_not_birth_dates():
+    events = pd.Series(["2025-01-03", "2025-06-30", "14.11.2025", "2024-12-31"] * 20)
+    assert strong_evidence(profile_column("export", "c23", events)) is None
+
+
+def test_an_unkeyed_hash_of_an_id_takes_the_id_label():
+    import hashlib
+
+    from pets_engine.detect.hash_reversal import reverse_hashes
+    from pets_engine.domain.field_label import FieldLabel
+
+    ids = ["241094-9670", "090205A9135", "200278907W", "131052-308T"] * 5
+    frame = pd.DataFrame({"c05": ids, "c20": [hashlib.sha256(v.encode()).hexdigest() for v in ids],
+                          "c21": [hashlib.sha256(f"other-{i}".encode()).hexdigest() for i in range(len(ids))]})
+    labels = [FieldLabel("export", "c05", "direct_identifier", "NATIONAL_ID", 0.99, "validator"),
+              FieldLabel("export", "c20", "technical_identifier", "OTHER", 0.99, "validator"),
+              FieldLabel("export", "c21", "technical_identifier", "OTHER", 0.99, "validator")]
+    hashed, unrelated = reverse_hashes({"export": frame}, labels)[1:]
+    assert (hashed.role, hashed.subtype, hashed.source) == ("direct_identifier", "NATIONAL_ID", "hash check")
+    assert "SHA-256 of c05" in hashed.reasons[0]
+    assert (unrelated.role, unrelated.subtype) == ("technical_identifier", "OTHER")

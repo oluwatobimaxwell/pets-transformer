@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 
 _K_BAR = re.compile(r"k\s*(?:>=|≥)\s*(\d+)", re.I)
 _RECALL_BAR = re.compile(r"recall\s*(?:>=|≥)\s*(0?\.\d+)", re.I)
+_EPSILON_BAR = re.compile(r"(?:ε|epsilon)\s*(?:<=|≤|=)\s*(\d+(?:\.\d+)?)", re.I)
 
 
 @dataclass(frozen=True)
@@ -20,6 +21,8 @@ class Scenario:
     questions: tuple = field(default_factory=tuple)
     k: int | None = None
     text_recall: float | None = None
+    epsilon: float | None = None
+    workload: str = ""  # a question list for a public release, in the challenge toolkit's format
 
     @classmethod
     def from_dict(cls, raw: dict) -> "Scenario":
@@ -49,3 +52,11 @@ class Scenario:
             return self.text_recall
         found = _RECALL_BAR.search(self.targets)
         return float(found.group(1)) if found else 0.95
+
+    @property
+    def epsilon_limit(self) -> float | None:
+        """The privacy budget for a public release: set directly, or stated in the targets text. None means the policy default."""
+        if self.epsilon is not None:
+            return float(self.epsilon)
+        found = _EPSILON_BAR.search(self.targets)
+        return float(found.group(1)) if found else None

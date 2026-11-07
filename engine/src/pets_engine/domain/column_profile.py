@@ -26,6 +26,10 @@ class ColumnProfile:
     top_shape_share: float
     shape_count: int
     pattern_shares: dict = field(default_factory=dict)
+    # 5th, 50th and 95th percentile of the years, for columns of dates; zeros otherwise
+    year_low: int = 0
+    year_mid: int = 0
+    year_high: int = 0
 
     @property
     def key(self) -> str:

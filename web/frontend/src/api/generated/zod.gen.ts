@@ -142,7 +142,8 @@ export const zScenarioOut = z.object({
     purpose: z.string(),
     trust_level: z.string(),
     k: z.number().int(),
-    task_ids: z.array(z.string())
+    task_ids: z.array(z.string()),
+    public_output: z.enum(['answers', 'blocked']).nullish()
 });
 
 /**

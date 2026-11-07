@@ -11,6 +11,19 @@ headline:
   utility: "The average score of the questions this recipient must still be able to answer."
   composite: "A combined score that is only high when both privacy and usefulness are high."
   rows: "Rows that stand out are removed. Linked rows in other tables go with them."
+  budget: "The differential privacy budget this release spends. Smaller is more private."
+  answered: "Public releases get noisy answers to their question list instead of rows."
+
+# Caveats every release carries.
+standing_risks:
+  attackers: "Only the public attackers were tested. The organisers hold stronger hidden ones."
+  self_assessment: "Scores are self-assessment from pets-eval, not official judging."
+
+# Public releases made of answers: what the guarantee leaves open.
+answer_risks:
+  - "The noise comes from NumPy's Laplace sampler, which isn't hardened against floating-point attacks."
+  - "Each release spends its budget again. Releases about the same people add up: 52 weekly releases at epsilon 1 make epsilon 52 over a year."
+  - "Records with no person ID count as one person each, so someone with several of them is less protected."
 
 tasks:
   H-U1: {question: "How many flu-like visits happen each week, by age band?", scoring: "Compares weekly counts per 10-year age band. A 50% average error scores 0.", needs: "Arrival week, age, diagnosis"}

@@ -24,7 +24,8 @@ def _scores(report: dict | None, results: list):
     return {"utility": round(sum(answered) / len(answered), 4)} if answered else None
 
 
-def build_manifest(config, labels: list, plan: list, tuned, verdicts: list, report: dict | None, rows: dict, attack: dict, results: list) -> dict:
+def build_manifest(config, labels: list, plan: list, tuned, verdicts: list, report: dict | None, rows: dict, attack: dict, results: list,
+                   answers: dict | None = None) -> dict:
     labels_by_key = {label.key: label for label in labels}
     fields = []
     for choice in plan:
@@ -46,6 +47,7 @@ def build_manifest(config, labels: list, plan: list, tuned, verdicts: list, repo
         "top_risks": top_risks(report),
         "stronger_attacker": attack,
         "tasks": results,
+        "answers": answers,
     }
 
 

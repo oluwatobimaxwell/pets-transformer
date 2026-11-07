@@ -29,11 +29,11 @@ Results (self-assessment with pets-eval, public attackers)
 Hospital research release (HEALTH-S1): privacy 1.00, usefulness 0.97, 97.8% of rows kept. The challenge's classic baseline reaches 0.79 usefulness.
 Contact-centre chats for an AI vendor (CS-S1): privacy 1.00, usefulness 0.97. 0.17% of identifying values survive in held-out chats.
 Security logs for a monitoring provider (CYBER-S1): usefulness 0.99, all ten detection questions still work.
-A public dashboard scenario is blocked, because the engine makes row-level releases only.
+Public weekly dashboard (HEALTH-S2): no rows at all. The engine publishes 254 noisy answers with differential privacy, ε 1 and at most 4 visits per patient. Usefulness 0.74 on average, against 0.69 for the challenge's DP baseline.
 The surprise HR file, with meaningless column names: we wrote a scenario for pay researchers with four questions. After a person confirmed three unsure columns, it released with usefulness 0.95 and every row matching at least five others.
 
 How we built it
-Python and pandas, with scikit-learn for the column detector and the challenge's pets-eval toolkit for scoring. The web app is FastAPI and React, scaffolded with blacksmith-cli, a team member's open-source tool. We trained the detector on the public field catalogue and measured it on datasets it never saw, reaching macro-F1 0.85. Text redaction uses layers instead of a large model: formats and cue words in Finnish, Swedish and English, spoken numbers, the person's own record, and names the data owner already holds. We checked it on three kinds of text we never tuned on. No outside service sees the data. We used Claude Code as an AI coding assistant.
+Python and pandas, with scikit-learn for the column detector and the challenge's pets-eval toolkit for scoring. The web app is FastAPI and React, scaffolded with blacksmith-cli, a team member's open-source tool. We trained the detector on the public field catalogue and measured it on datasets it never saw, reaching macro-F1 0.86. A value check found that one column of the surprise file is an unkeyed SHA-256 of the national ID. Text redaction uses layers instead of a large model: formats and cue words in Finnish, Swedish and English, spoken numbers, the person's own record, and names the data owner already holds. We checked it on three kinds of text we never tuned on. No outside service sees the data. We used Claude Code as an AI coding assistant.
 
 Challenges
 The gate caught our own mistakes. It blocked a release where a revisit question had silently broken, which led to the repair step. It caught a join key left raw in one table and pseudonymised in another. Inspecting the output by hand, we found that rows kept in arrival order revealed each visit's date even with the date removed. Shuffling and a new gate check fixed it. We also found that the scorer's look-alike check ignores derived columns such as age band, so the engine runs its own stricter check.
@@ -42,7 +42,7 @@ What still isn't solved
 The organisers' hidden attackers weren't available, so we built a stronger attacker of our own. On the hospital release, the clue columns single out nobody, but someone who already knows a patient's diagnosis can single out 27% of visits. 74% of patients with repeat visits have a unique visit pattern. Security logs keep minute-level timestamps because detection needs them, so their privacy score is 0.32. We report these numbers instead of hiding them.
 
 Next steps
-Differentially private aggregates so public releases aren't blocked, protection across a person's repeat records, and sign-in so the web app can serve a team.
+Turning a written scenario's questions into a list for noisy answers, protection across a person's repeat records, and sign-in so the web app can serve a team.
 
 ## MLH questions
 - GenAI tools used: Claude Code (Anthropic).

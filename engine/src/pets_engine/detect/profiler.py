@@ -7,12 +7,14 @@ import numpy as np
 import pandas as pd
 
 from ..domain.column_profile import ColumnProfile
+from ..utils.dates import year_percentiles
 from ..utils.numbers import to_number
 from ..utils.tables import non_blank
 from .patterns import PATTERNS
 
 SAMPLE_VALUES = 2000
 SEED = 7
+DATE_SHARE = 0.5
 
 
 def value_shape(value: str) -> str:
@@ -31,6 +33,8 @@ def profile_column(table: str, column: str, values: pd.Series) -> ColumnProfile:
     finite = numbers[is_number & np.isfinite(numbers)]
     char_total = max(int(lengths.sum()), 1)
     joined = "".join(sample.tolist())
+    pattern_shares = {name: round(float(sample.map(test).mean()), 4) if len(sample) else 0.0 for name, test in PATTERNS.items()}
+    year_low, year_mid, year_high = year_percentiles(sample) if pattern_shares["date"] >= DATE_SHARE else (0, 0, 0)
     return ColumnProfile(
         table=table, column=column, rows=rows,
         blank_share=round(1 - len(present) / max(rows, 1), 4),
@@ -49,6 +53,5 @@ def profile_column(table: str, column: str, values: pd.Series) -> ColumnProfile:
         top_value_share=round(float(present.value_counts(normalize=True).iloc[0]), 4) if len(present) else 0.0,
         top_shape_share=round(float(shapes.value_counts(normalize=True).iloc[0]), 4) if len(shapes) else 0.0,
         shape_count=int(shapes.nunique()),
-        pattern_shares={name: round(float(sample.map(test).mean()), 4) if len(sample) else 0.0
-                        for name, test in PATTERNS.items()},
+        pattern_shares=pattern_shares, year_low=year_low, year_mid=year_mid, year_high=year_high,
     )

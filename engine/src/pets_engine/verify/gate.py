@@ -13,7 +13,7 @@ from .task_results import from_scorecard, score_tasks, task_checks
 
 def person_key_column(plan: list, table: str):
     for choice in plan:
-        if choice.table == table and choice.pet == "keyed_pseudonym" and choice.params.get("subtype") in ("NATIONAL_ID", "CUSTOMER_ID", "PATIENT_ID"):
+        if choice.table == table and choice.pet == "keyed_pseudonym" and choice.params.get("subtype") in policy()["person_subtypes"]:
             return choice.output_column
     return None
 

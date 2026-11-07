@@ -56,6 +56,18 @@ questions:
 ```
 
 Question kinds: `median`, `mean`, `count` (with `by`), `correlation` (two columns) and `distribution` (one column).
+
+A `public` recipient never gets rows. Give it a question list in the challenge toolkit's DP workload format, and the engine publishes
+noisy answers with differential privacy. For package data, the dataset's own workload file is found automatically.
+
+```yaml
+trust_level: public
+epsilon: 1                 # privacy budget for this release (default 1)
+workload: workload.json    # {"table": "visits", "queries": [{"id": "Q1", "type": "count", "filters": {"area": "north"}}, ...]}
+```
+
+Each person adds at most 4 records, chosen at random. Questions with the same kind and filter fields form a family, and each family gets a
+share of the budget by the square root of its size. Means need `bounds`, and their values are clipped to them.
 Write columns as `table.column`, where the table is the CSV file's name. With no questions, every kept column gets a standard check
 that its distribution keeps its shape, and nothing is coarsened beyond what `k` requires.
 
@@ -63,7 +75,7 @@ that its distribution keeps its shape, and nothing is coarsened beyond what `k` 
 
 | Folder | Contents | Share it? |
 |---|---|---|
-| `release/` | Protected tables. Only exists if the gate passed. | With the recipient |
+| `release/` | Protected tables, or `dp_answers.csv` for a public recipient. Only exists if the gate passed. | With the recipient |
 | `staged/` | The output when a person must review it. | No |
 | `evidence/` | `report.md`, `manifest.json`, `scorecard.html` | Yes |
 | `private/` | Row maps for scoring | Never publish |
@@ -76,7 +88,8 @@ To review a held run, write a JSON file of decisions and run again with `--revie
 
 ## How it works
 
-1. **Detect** labels each column from its values and name. Unsure columns count as sensitive until a person checks them.
+1. **Detect** labels each column from its values and name. Unsure columns count as sensitive until a person checks them. An unkeyed hash
+   of another column takes that column's label, because anyone can undo it.
 2. **Select** starts from an allow-list. It re-runs the scenario's tasks with columns removed, and anything no task needs is dropped whatever its label. Readable rules in `data/rules.yaml` then choose a PET for what stays.
 3. **Tune** searches settings against real task scores, and brings a safe column back if coarsening broke a task.
 4. **Transform** applies the PETs. Keys differ per recipient, so two releases can't be joined.
@@ -87,7 +100,8 @@ Free text is redacted in layers: formats and cue words, spoken numbers, the pers
 
 ## Limits
 
-- Public scenarios are blocked, because the engine makes row-level releases and doesn't build aggregates yet.
+- Public scenarios get answers only, and only when there is a question list; otherwise they're blocked. The budget is per release, so
+  releases about the same people add up, and NumPy's Laplace sampler isn't hardened against floating-point attacks.
 - `pets-eval` scores are self-assessment against public attackers, not official judging.
 - The name lexicon was written after reading the public catalogue, so detector scores are somewhat optimistic.
 - Attack tests with the public attacker files need the challenge package. On other data, the engine's own checks and stronger attacker still run.

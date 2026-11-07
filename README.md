@@ -14,14 +14,18 @@ Self-assessment with the challenge's `pets-eval` toolkit, against its public att
 | `HEALTH-S1` | University research group | Released on attempt 2 | 1.00 | 0.97 | 97.8% |
 | `CS-S1` | AI vendor, contact-centre chats | Released | 1.00 | 0.97 | 100% |
 | `CYBER-S1` | Managed security provider | Released | 0.32 | 0.99 | 100% |
-| `HEALTH-S2` | Public dashboard | Blocked, by design | – | – | – |
+| `HEALTH-S2` | Public dashboard | Released as 254 noisy answers, no rows | ε 1 | 0.74 | Answers only |
 | `unseen`, with a written scenario | Labour-market researchers | Released on attempt 2, after a person's review | – | 0.95 | 95.4% |
 
-For comparison, the challenge's classic baseline (B2) reaches usefulness 0.79, 0.75 and 0.81 on the three challenge scenarios.
+For comparison, the challenge's classic baseline (B2) reaches usefulness 0.79, 0.75 and 0.81 on the three row-level scenarios.
+On the public dashboard, its differential privacy baseline (B3) scores 0.24, 0.50, 0.69 and 0.80 at ε 0.25, 0.5, 1 and 2. Ours averages
+0.40, 0.60, 0.74 and 0.83 over 10 runs each, because the budget follows the size of each group of questions.
 The `unseen` file has meaningless column names and no answers in the package. Its scenario and questions were written by us, in
 [engine/examples/unseen_scenario.yaml](engine/examples/unseen_scenario.yaml), so it shows the engine on data it has never seen.
 
-- **Detect:** macro-F1 0.85 and sensitive-column recall 0.90 on datasets the model never trained on. The name lexicon was written after reading the public catalogue, so treat this as optimistic. Values alone, as in the unnamed `unseen` file, reach macro-F1 0.65.
+- **Detect:** macro-F1 0.86, and 96% of sensitive columns treated as sensitive, on datasets the model never trained on. The name lexicon was written after reading the public catalogue, so treat this as optimistic. Values alone, as in the unnamed `unseen` file, reach macro-F1 0.65.
+  Two value checks run before the model: birth dates are recognised in any common format from the spread of their years, and every
+  hash column is tested against the other columns on this machine. In `unseen`, that shows `c20` is an unkeyed SHA-256 of the national ID.
 - **Text redaction:** 0.17% of identifying values survive in held-out chats, and 0.00–1.19% in three kinds of text the rules were never tuned on.
 
 ## Risks that remain
@@ -29,7 +33,9 @@ The `unseen` file has meaningless column names and no answers in the package. It
 - **Our stronger attacker.** The organisers' hidden attackers weren't available, so the engine runs its own. On the health release, knowing a patient's clue columns singles out nobody. Adding the diagnosis singles out 27% of visits, and adding every kept fact singles out 98%.
 - **Repeat visits.** 74% of patients with more than one visit have a unique pattern across them, which a row-level look-alike check can't see.
 - **Cyber logs.** Privacy is 0.32 because detection rules need minute-level timestamps, and the scenario sets no look-alike bar.
-- **Public scenarios** are blocked: the engine makes row-level releases and doesn't build aggregates yet.
+- **Public answers.** The budget is per release, so weekly releases about the same people add up. The noise comes from NumPy's Laplace
+  sampler, which isn't hardened against floating-point attacks. Two of HEALTH-S2's questions, H-U1 and H-U8, need rows, so they aren't answered.
+  A public scenario with no question list is still blocked.
 
 ## Quick start
 
@@ -93,6 +99,8 @@ Detect was unsure about, run the gate, and download the protected data and evide
 3. **Tune** searches settings such as age bands and time detail against the real question scores, and brings a safe column back if a question breaks.
 4. **Transform** applies keyed pseudonyms, generalisation, code shortening and layered text redaction, then shuffles rows so their order reveals nothing.
 5. **Verify** compares the output with the originals, runs the attacks, and returns release, review or block. A failed look-alike check goes back for suppression.
+   A public recipient gets no rows at all: the engine answers its question list with differential privacy instead, with each person's
+   contribution bounded, and states the mechanism, ε, δ and unit of privacy.
 6. **Report** writes a dashboard, a field-by-field record and a plain-language summary.
 
 No large language model or outside service sees the data.
@@ -110,6 +118,7 @@ The team built this with Claude Code (Anthropic) as an AI coding assistant. The 
 
 ## What was built at the event
 
-Everything in this repository was written during Since AI Hackathon 2026, 6–8 November, except the web app's skeleton. That was generated
+Everything in this repository was written during Since AI Hackathon 2026, 6–8 November, except the web app's skeleton. The hash check,
+the birth-date rule and differentially private answers follow ideas from ProofPET, a teammate's prototype built at the same event. That was generated
 at the event with blacksmith-cli, a pre-existing open-source tool, then stripped and rebuilt (details in [web/README.md](web/README.md)).
 The engine depends on the challenge's `pets-eval` toolkit, which isn't part of this repository.

@@ -192,13 +192,22 @@ function head(id, title, lede, extra){
 
 function overview(){
   var tiles = (D.headline || []).map(function(t){
-    var value = t.format === "percent" ? pct(t.value) : t.format === "count" ? h("span", {}, [String(t.value), h("small", {text:" of " + t.total})]) : fmt2(t.value);
+    var value = t.format === "percent" ? pct(t.value) : t.format === "count" ? h("span", {}, [String(t.value), h("small", {text:" of " + t.total})])
+      : t.format === "epsilon" ? h("span", {}, [h("small", {text:"ε "}), String(t.value)]) : fmt2(t.value);
     return h("div", {class:"tile"}, [h("div", {class:"label", text:t.label}), h("div", {class:"value"}, [value]), h("p", {text:t.meaning})]);
   });
   var kids = head("overview", "Overview", D.composite !== null && D.composite !== undefined ? "Combined score " + fmt2(D.composite) + ". " + D.composite_meaning : "");
   kids.push(h("div", {class:"tiles"}, tiles));
+  if (D.answers) kids.push(answersCard(D.answers));
   if ((D.remaining || []).length) kids.push(h("div", {class:"callout"}, [h("h3", {text:"Risks that remain"}), h("ul", {}, D.remaining.map(function(r){ return h("li", {text:r}); }))]));
   $("overview").append.apply($("overview"), kids.filter(Boolean));
+}
+
+function answersCard(A){
+  return h("div", {class:"card", style:"padding:14px 16px;margin-top:12px"}, [h("h3", {text:"Answers, not rows: the guarantee"}),
+    h("ul", {}, A.guarantee.map(function(line){ return h("li", {text:line}); })),
+    h("div", {class:"scroll"}, [h("table", {}, [h("thead", {}, [h("tr", {}, ["Questions","How many","Epsilon","Noise"].map(function(c){ return h("th", {scope:"col", text:c}); }))]),
+      h("tbody", {}, A.families.map(function(f){ return h("tr", {}, [h("td", {text:f.questions}), h("td", {class:"n", text:String(f.count)}), h("td", {class:"n", text:String(f.epsilon)}), h("td", {text:f.noise})]); }))])])]);
 }
 
 function scoreBar(score, tone){

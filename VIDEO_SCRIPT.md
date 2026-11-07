@@ -1,4 +1,4 @@
-# Demo video script, about 1 minute 55 seconds
+# Demo video script, about 1 minute 57 seconds
 
 Record the screen at 1080p in the web app (http://localhost:5174). Before recording, start the backend and frontend, and run
 `HEALTH-S1` once so the needs cache is warm and the run takes under a minute.
@@ -12,4 +12,4 @@ Record the screen at 1080p in the web app (http://localhost:5174). Before record
 | 0:55–1:10 | Run page: tiles and question scores | Privacy 1.00, usefulness 0.97, against 0.79 for the challenge baseline, and 97.8% of rows kept. Every question the researchers need still works. |
 | 1:10–1:28 | Embedded dashboard: Usefulness, then Records with a `pt…` code clicked | Every question shows both answers: median stay at triage level A is 302 minutes in the original and 301 protected. Each patient has a keyed code, so revisits still link up. |
 | 1:28–1:45 | Dashboard, Privacy risks: stronger attacker card | We also ran our own stronger attacker. The clues single out nobody, but someone who knows a diagnosis can single out 27% of visits. We report that instead of hiding it. |
-| 1:45–1:55 | Run page, download buttons | Only the protected data and its evidence can leave the machine. PETs Transformer: tell it who gets the data, and it protects it, proves it's useful, or refuses. |
+| 1:45–1:57 | Scenario list: the `HEALTH-S2` badge | A public recipient gets noisy answers, never rows, with a stated privacy budget. Tell it who gets the data: it protects it, proves it's useful, or refuses. |

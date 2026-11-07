@@ -6,6 +6,7 @@ import yaml
 from fastapi import HTTPException
 
 from pets_eval import io
+from pets_engine.answers.workload import public_output
 from pets_engine.domain.scenario import Scenario
 from pets_engine.utils.package import load_scenario
 from pets_engine.utils.scenario_file import load_scenario_file
@@ -25,7 +26,8 @@ def challenge_scenarios(dataset: str | None) -> list:
         scenario = Scenario.from_dict(raw)
         if not dataset or scenario.dataset == dataset:
             listed.append({"id": scenario.id, "dataset": scenario.dataset, "title": raw["title"], "recipient": scenario.recipient,
-                           "purpose": scenario.purpose, "trust_level": scenario.trust_level, "k": scenario.k_required, "task_ids": list(scenario.task_ids)})
+                           "purpose": scenario.purpose, "trust_level": scenario.trust_level, "k": scenario.k_required, "task_ids": list(scenario.task_ids),
+                           "public_output": public_output(scenario, root)})
     return listed
 
 

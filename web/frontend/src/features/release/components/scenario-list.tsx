@@ -23,7 +23,8 @@ export function ScenarioList({ dataset, chosen, onChoose }: ScenarioListProps) {
                 <Text as="span" fontFamily="mono" me="2">{scenario.id}</Text>
                 {scenario.title}
               </Card.Title>
-              {scenario.trust_level === 'public' && <Badge colorPalette="orange">Public: will be blocked</Badge>}
+              {scenario.public_output === 'answers' && <Badge colorPalette="blue">Public: answers only, with differential privacy</Badge>}
+              {scenario.public_output === 'blocked' && <Badge colorPalette="orange">Public: will be blocked</Badge>}
             </HStack>
             <Card.Description>For {scenario.recipient}. {scenario.purpose}</Card.Description>
             <Text textStyle="xs" color="fg.muted">

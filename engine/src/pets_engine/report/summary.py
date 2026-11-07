@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from .answer_notes import answer_risk_lines, family_rows, guarantee_lines, standing_risks
+
 STATUS_WORDS = {"release": "Released", "review": "Held for a person's review", "block": "Blocked"}
 
 
@@ -25,8 +27,7 @@ def _attempt_lines(manifest: dict) -> list:
 
 
 def _residual_lines(manifest: dict) -> list:
-    lines = ["## Risks that remain", "- Public attackers only. The organisers' hidden attackers have not tested this release.",
-             "- Scores are self-assessment from `pets-eval`, not official judging."]
+    lines = ["## Risks that remain"] + [f"- {note}" for note in standing_risks(manifest)]
     last = manifest["attempts"][-1] if manifest["attempts"] else {"checks": []}
     lines += [f"- {c['detail']}" for c in last["checks"] if c["name"] == "Risk across repeat records"]
     lines += [f"- {t['id']} scored {t['score']:.2f}." for t in manifest["tasks"] if t["score"] is not None and t["score"] < 0.8]
@@ -36,6 +37,13 @@ def _residual_lines(manifest: dict) -> list:
     return lines
 
 
+def _answer_lines(answers: dict) -> list:
+    lines = ["## Published answers, not rows"] + [f"- {line}" for line in guarantee_lines(answers)]
+    lines += ["", "| Questions | How many | Epsilon | Noise |", "|---|---|---|---|"]
+    lines += [f"| {f['questions']} | {f['count']} | {f['epsilon']:g} | {f['noise']} |" for f in family_rows(answers)]
+    return lines + [""]
+
+
 def write_summary(manifest: dict, folder: Path) -> Path:
     scenario = manifest["scenario"]
     rows = manifest["rows"]
@@ -43,11 +51,18 @@ def write_summary(manifest: dict, folder: Path) -> Path:
     s = manifest["scores"] or {}
     if s.get("privacy") is not None:
         lines += [f"Self-assessment: privacy {s['privacy']:.2f}, utility {s['utility']:.2f}, composite {s['composite']:.2f}", ""]
+    elif s.get("utility") is not None and manifest.get("answers"):
+        lines += [f"Usefulness: {s['utility']:.2f}, how close the noisy answers are to the true ones", ""]
     elif s.get("utility") is not None:
         lines += [f"Usefulness: {s['utility']:.2f} (no challenge scorecard for this data)", ""]
-    lines += [f"Rows kept: {rows.get('kept', 0):,} of {rows.get('total', 0):,}", "", "## What happened to each field"] + _pet_lines(manifest) + ["", "## Gate"] + _attempt_lines(manifest)
+    answers = manifest.get("answers")
+    if answers:
+        lines += _answer_lines(answers)
+    else:
+        lines += [f"Rows kept: {rows.get('kept', 0):,} of {rows.get('total', 0):,}", "", "## What happened to each field"] + _pet_lines(manifest) + [""]
+    lines += ["## Gate"] + _attempt_lines(manifest)
     lines += ["## Tasks"] + [f"- {t['id']}: {'not answerable' if t['score'] is None else format(t['score'], '.2f')}. {t['description']}" for t in manifest["tasks"]]
-    lines += [""] + _residual_lines(manifest)
+    lines += [""] + _residual_lines(manifest) + [f"- {line}" for line in (answer_risk_lines(answers) if answers else [])]
     target = folder / "report.md"
     target.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return target

@@ -7,6 +7,7 @@ from pathlib import Path
 from .. import __version__
 from ..domain.run_paths import RunPaths
 from ..utils.explanations import explanations, risk_wording, score_band
+from .answer_notes import answer_risk_lines, family_rows, guarantee_lines, standing_risks
 from .comparisons import plain_change, side_by_side
 from .records import records_view
 
@@ -52,6 +53,11 @@ def _attacker(manifest: dict) -> list:
     return rows
 
 
+def _answers(manifest: dict):
+    answers = manifest.get("answers")
+    return {"guarantee": guarantee_lines(answers), "families": family_rows(answers)} if answers else None
+
+
 def _headline(manifest: dict) -> list:
     words = explanations()["headline"]
     scores = manifest.get("scores") or {}
@@ -59,6 +65,10 @@ def _headline(manifest: dict) -> list:
     tasks = manifest.get("tasks", [])
     working = sum(1 for t in tasks if t["score"] is not None and t["score"] >= 0.8)
     tiles = []
+    answers = manifest.get("answers")
+    if answers:
+        tiles.append({"label": "Privacy budget", "value": answers["epsilon"], "format": "epsilon", "meaning": words["budget"]})
+        tiles.append({"label": "Answers published", "value": answers["answered"], "format": "count", "total": answers["questions"], "meaning": words["answered"]})
     if scores and scores.get("privacy") is not None:
         tiles.append({"label": "Privacy", "value": scores["privacy"], "format": "score", "meaning": words["privacy"]})
     if scores and scores.get("utility") is not None:
@@ -73,11 +83,11 @@ def _headline(manifest: dict) -> list:
 
 
 def _remaining(manifest: dict) -> list:
-    notes = ["Only the public attackers were tested. The organisers hold stronger hidden ones.", "Scores are self-assessment from pets-eval, not official judging."]
+    notes = standing_risks(manifest)
     last = manifest["attempts"][-1] if manifest.get("attempts") else {"checks": []}
     notes += [c["detail"] for c in last["checks"] if c["name"] == "Risk across repeat records" and "No person" not in c["detail"]]
     notes += [f"{r['risk']}: {r['value']:.2f}, allowed because this scenario sets no bar for it." for r in manifest.get("top_risks", [])]
-    return notes
+    return notes + (answer_risk_lines(manifest["answers"]) if manifest.get("answers") else [])
 
 
 def dashboard_data(run_dir: Path) -> dict:
@@ -90,4 +100,5 @@ def dashboard_data(run_dir: Path) -> dict:
             "scenario": manifest["scenario"], "headline": _headline(manifest), "tasks": _tasks(manifest), "risks": _risks(scorecard), "attacker": _attacker(manifest),
             "remaining": _remaining(manifest), "fields": manifest["fields"], "attempts": manifest["attempts"],
             "tuning": (manifest.get("tuning") or {}).get("levels", {}), "records": records_view(paths, manifest["fields"]),
-            "composite": (manifest.get("scores") or {}).get("composite"), "composite_meaning": explanations()["headline"]["composite"]}
+            "composite": (manifest.get("scores") or {}).get("composite"), "composite_meaning": explanations()["headline"]["composite"],
+            "answers": _answers(manifest)}

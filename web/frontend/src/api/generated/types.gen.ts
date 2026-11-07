@@ -309,6 +309,10 @@ export type ScenarioOut = {
      * Task Ids
      */
     task_ids: Array<string>;
+    /**
+     * Public Output
+     */
+    public_output?: 'answers' | 'blocked' | null;
 };
 
 /**

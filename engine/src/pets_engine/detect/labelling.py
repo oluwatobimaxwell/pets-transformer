@@ -6,12 +6,13 @@ from pathlib import Path
 
 from ..domain.field_label import FieldLabel
 from .detector import ColumnDetector
+from .hash_reversal import reverse_hashes
 from .profiler import profile_column
 
 
 def label_tables(tables: dict, detector: ColumnDetector) -> list:
     profiles = [profile_column(table, column, frame[column]) for table, frame in tables.items() for column in frame.columns]
-    return detector.label(profiles)
+    return reverse_hashes(tables, detector.label(profiles))
 
 
 def apply_review(labels: list, review_file: Path | None) -> list:
