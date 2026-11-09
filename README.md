@@ -4,6 +4,7 @@ Tell it who will receive a dataset. It protects the data, proves the data is sti
 
 Built at Since AI Hackathon 2026 for the TrustED PETs Transformer challenge. Every dataset used is synthetic and comes from the challenge package.
 This project isn't produced or endorsed by the TrustED consortium or the European Union
+Protect, validate, and safely release datasets only when they meet recipient-specific privacy and utility requirements.
 
 ## Results
 
