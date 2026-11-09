@@ -1,6 +1,7 @@
 """Where uploads and runs live on disk. Nothing here is ever served except through the routers' allow-list."""
 
 import json
+import os
 import re
 import uuid
 from pathlib import Path
@@ -36,5 +37,8 @@ def read_record(path: Path) -> dict:
 
 
 def write_record(path: Path, record: dict) -> None:
+    """Written beside the record first, then swapped in whole, so a reader polling it never sees half a file."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(record, indent=1, ensure_ascii=False, default=str), encoding="utf-8")
+    temporary = path.with_name(f".{path.name}.{uuid.uuid4().hex[:8]}.tmp")
+    temporary.write_text(json.dumps(record, indent=1, ensure_ascii=False, default=str), encoding="utf-8")
+    os.replace(temporary, path)

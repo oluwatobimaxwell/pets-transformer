@@ -3,8 +3,7 @@
 Tell it who will receive a dataset. It protects the data, proves the data is still useful for that recipient, and blocks any release that fails.
 
 Built at Since AI Hackathon 2026 for the TrustED PETs Transformer challenge. Every dataset used is synthetic and comes from the challenge package.
-This project isn't produced or endorsed by the TrustED consortium or the European Union
-Protect, validate, and safely release datasets only when they meet recipient-specific privacy and utility requirements.
+This project isn't produced or endorsed by the TrustED consortium or the European Union.
 
 ## Results
 
@@ -128,3 +127,8 @@ The hash check, the birth-date and trade-union rules, differentially private ans
 follow ideas from ProofPET, a teammate's prototype built at the same event.
 The engine depends on the challenge's `pets-eval` toolkit, which isn't part of this repository.
 Download the project presentation:https://m365.cloud.microsoft/chat/conversation/PETs-Transformer-Project.pptx 
+
+
+## Presentation
+
+The project slides are in this repository: [PETs-Transformer-Project.pptx](PETs-Transformer-Project.pptx).
